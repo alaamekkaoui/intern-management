@@ -11,7 +11,7 @@
             <tr>
                 <th>Nom de l'enseignant</th>
                 <th>Type de stage</th>
-                <th>Car nécessaire</th>
+                <th>Voiture nécessaire</th>
                 <th>Début</th>
                 <th>Fin</th>
                 <th>Actions</th>
@@ -20,15 +20,16 @@
         <tbody>
             {% for internship in internships %}
                 <tr>
-                    <td>{{ internship.teacher_name }}</td>
-                    <td>{{ internship.intern_type }}</td>
-                    <td>{{ internship.car_needed }}</td>
+                    <td>{{ internship.first_name }} {{ internship.last_name }}</td> <!-- Teacher name -->
+                    <td>{{ internship.intern_type.name }}</td> <!-- Type of internship -->
+                    <td>{{ 'Oui' if internship.car_needed else 'Non' }}</td>
                     <td>{{ internship.start_date }}</td>
                     <td>{{ internship.end_date }}</td>
                     <td>
-                        <a href="/internship/{{ internship.id }}" class="btn btn-info">Détails</a>
-                        <a href="/internship/cancel/{{ internship.id }}" class="btn btn-warning">Annuler</a>
+                        <a href="/internship/edit/{{ internship.id }}" class="btn btn-warning">Modifier</a>
+                        <a href="/internship/cancel/{{ internship.id }}" class="btn btn-danger">Annuler</a>
                         <a href="/internship/done/{{ internship.id }}" class="btn btn-success">Terminer</a>
+                        <a href="/internship/details/{{ internship.id }}" class="btn btn-info">Détails</a>
                     </td>
                 </tr>
             {% endfor %}

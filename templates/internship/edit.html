@@ -1,37 +1,50 @@
 {% extends 'base.html' %}
 
-{% block title %}Edit Internship{% endblock %}
+{% block title %}Modifier le Stage{% endblock %}
 
 {% block content %}
-    <h1>Edit Internship</h1>
+    <h1>Modifier le Stage</h1>
     <form action="{{ url_for('edit_internship', internship_id=internship.id) }}" method="POST">
-        <label for="title">Internship Title:</label>
-        <input type="text" id="title" name="title" value="{{ internship.title }}" required><br>
+        <div class="form-group">
+            <label for="teacher_id">Enseignant</label>
+            <select class="form-control" id="teacher_id" name="teacher_id">
+                {% for teacher in teachers %}
+                    <option value="{{ teacher.id }}" {% if teacher.id == internship.teacher_id %} selected {% endif %}>
+                        {{ teacher.first_name }} {{ teacher.last_name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
 
-        <label for="start_date">Start Date:</label>
-        <input type="date" id="start_date" name="start_date" value="{{ internship.start_date }}" required><br>
+        <div class="form-group">
+            <label for="intern_type">Type de Stage</label>
+            <select class="form-control" id="intern_type" name="intern_type">
+                {% for type in internship_types %}
+                    <option value="{{ type.id }}" {% if type.id == internship.intern_type %} selected {% endif %}>
+                        {{ type.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
 
-        <label for="end_date">End Date:</label>
-        <input type="date" id="end_date" name="end_date" value="{{ internship.end_date }}" required><br>
+        <div class="form-group">
+            <label for="car_needed">Voiture nécessaire</label>
+            <input type="checkbox" class="form-check-input" id="car_needed" name="car_needed" {% if internship.car_needed %} checked {% endif %}>
+        </div>
 
-        <label for="teacher_id">Teacher:</label>
-        <select name="teacher_id" id="teacher_id">
-            {% for teacher in teachers %}
-                <option value="{{ teacher.id }}" {% if teacher.id == internship.teacher_id %} selected {% endif %}>
-                    {{ teacher.first_name }} {{ teacher.last_name }}
-                </option>
-            {% endfor %}
-        </select><br>
+        <div class="form-group">
+            <label for="start_date">Date de début</label>
+            <input type="date" class="form-control" id="start_date" name="start_date" value="{{ internship.start_date }}" required>
+        </div>
 
-        <label for="status">Status:</label>
-        <select name="status" id="status">
-            <option value="pending" {% if internship.status == 'pending' %} selected {% endif %}>Pending</option>
-            <option value="done" {% if internship.status == 'done' %} selected {% endif %}>Done</option>
-            <option value="canceled" {% if internship.status == 'canceled' %} selected {% endif %}>Canceled</option>
-        </select><br>
+        <div class="form-group">
+            <label for="end_date">Date de fin</label>
+            <input type="date" class="form-control" id="end_date" name="end_date" value="{{ internship.end_date }}" required>
+        </div>
 
-        <button type="submit">Save Changes</button>
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
     </form>
+
     <br>
-    <a href="{{ url_for('internship_list') }}">Back to Internship List</a>
+    <a href="{{ url_for('internship_list') }}">Retour à la Liste des Stages</a>
 {% endblock %}

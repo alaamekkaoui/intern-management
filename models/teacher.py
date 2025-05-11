@@ -96,3 +96,39 @@ class Teacher:
         finally:
             cursor.close()
             conn.close()
+
+    @staticmethod
+    def get_by_email(email):
+        """Get a teacher by their email."""
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("""
+                SELECT * FROM teachers WHERE email = %s
+            """, (email,))
+            teacher = cursor.fetchone()
+        except Exception as e:
+            print(f"Error fetching teacher with email {email}: {e}")
+            teacher = None
+        finally:
+            cursor.close()
+            conn.close()
+        return teacher
+
+    @staticmethod
+    def get_by_name(first_name, last_name):
+        """Get a teacher by their first and last name."""
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("""
+                SELECT * FROM teachers WHERE first_name = %s AND last_name = %s
+            """, (first_name, last_name))
+            teacher = cursor.fetchone()
+        except Exception as e:
+            print(f"Error fetching teacher with name {first_name} {last_name}: {e}")
+            teacher = None
+        finally:
+            cursor.close()
+            conn.close()
+        return teacher

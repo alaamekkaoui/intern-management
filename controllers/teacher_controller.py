@@ -13,7 +13,7 @@ class TeacherController:
         departments = Department.get_all()
         return render_template('teacher/add.html', departments=departments)
 
-    # Add a new teacher
+    # Add a new teacher with check for existing teacher
     def add_teacher(self, request):
         first_name = request.form['first_name']
         last_name = request.form['last_name']
@@ -21,6 +21,17 @@ class TeacherController:
         email = request.form['email']
         phone = request.form['phone']
 
+        existing_teacher_by_email = Teacher.get_by_email(email)
+        if existing_teacher_by_email:
+            flash('Un enseignant avec cet email existe déjà.', 'danger')
+            return redirect('/teacher/add')
+
+        # Check if the teacher already exists by name (first and last name)
+        existing_teacher_by_name = Teacher.get_by_name(first_name, last_name)
+
+        if existing_teacher_by_name:
+            flash('Un enseignant avec ce nom existe déjà.', 'danger')
+            return redirect('/teacher/add')
         # Attempt to add the teacher
         try:
             Teacher.add_teacher(first_name, last_name, department_id, email, phone)

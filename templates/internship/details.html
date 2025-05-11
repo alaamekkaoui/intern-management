@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Détails du Stage{% endblock %}
+
+{% block content %}
+    <h2>Détails du Stage</h2>
+    <ul>
+        <li><strong>Enseignant :</strong> {{ internship.teacher_name }}</li>
+        <li><strong>Type de Stage :</strong> 
+            {% for type in internship_types %}
+                {% if type.id == internship.intern_type %}
+                    {{ type.name }}
+                {% endif %}
+            {% endfor %}
+        </li>
+        <li><strong>Voiture Nécessaire :</strong> {{ 'Oui' if internship.car_needed else 'Non' }}</li>
+        <li><strong>Date de début :</strong> {{ internship.start_date }}</li>
+        <li><strong>Date de fin :</strong> {{ internship.end_date }}</li>
+        <li><strong>Status :</strong> {{ internship.status }}</li>
+    </ul>
+    <a href="{{ url_for('internship_list') }}" class="btn btn-secondary">Retour à la Liste des Stages</a>
+{% endblock %}

@@ -1,10 +1,11 @@
-from flask import render_template, request
+from flask import flash, redirect, render_template, request, url_for
 from controllers.car_controller import CarController
 from controllers.department_controller import DepartmentController
 from controllers.internship_controller import InternshipController
 from controllers.user_controller import UserController
 from controllers.teacher_controller import TeacherController
 from models.department import Department
+from models.intern_type import InternType
 from models.teacher import Teacher
 #from models.teacher import Teacher
 
@@ -70,7 +71,7 @@ def init_routes(app):
             return teacher_controller.add_teacher(request)
         return teacher_controller.show_add_teacher_form()
 
-    @app.route('/teacher/details/<int:teacher_id>')
+    @app.route('/teacher/<int:teacher_id>')
     def teacher_details(teacher_id):
         return teacher_controller.show_teacher_details(teacher_id)
 
@@ -97,13 +98,18 @@ def init_routes(app):
     def add_internship():
         if request.method == 'POST':
             return internship_controller.add_internship(request)
-        return internship_controller.show_add_internship_form()
-
+        # Fetch intern types from the database
+        intern_types = InternType.get_all() 
+        return internship_controller.show_add_internship_form(intern_types)
+    
     @app.route('/internship/edit/<int:internship_id>', methods=['GET', 'POST'])
     def edit_internship(internship_id):
         if request.method == 'POST':
             return internship_controller.edit_internship(internship_id, request)
-        return internship_controller.show_edit_internship_form(internship_id)
+        # Fetch intern types from the database
+        intern_types = InternType.get_all()  
+        return internship_controller.show_edit_internship_form(internship_id, intern_types)
+
 
     @app.route('/internship/delete/<int:internship_id>', methods=['POST'])
     def delete_internship(internship_id):
@@ -117,12 +123,7 @@ def init_routes(app):
     def mark_as_done(internship_id):
         return internship_controller.mark_as_done(internship_id)
 
-    @app.route('/internship/types/add', methods=['GET', 'POST'])
-    def add_internship_type():
-        if request.method == 'POST':
-            return internship_controller.add_internship_type(request)
-        return internship_controller.show_add_internship_type_form()
-
+    
     # -------------------------------------------------User routes-------------------------------------------------
     @app.route('/login', methods=['GET', 'POST'])
     def login_user():
@@ -136,7 +137,7 @@ def init_routes(app):
     
     @app.route('/register')
     def register_user():
-        return user_controller.register()
+        return user_controller.register(request)
 
     @app.route('/user')
     def list_users():
@@ -147,3 +148,48 @@ def init_routes(app):
         if request.method == 'POST':
             return user_controller.edit_user(user_id, request)
         return user_controller.show_edit_user_form(user_id)
+    
+    # -------------------------------------------------Inter Type routes-------------------------------------------------
+
+    @app.route('/internship/types')
+    def list_internship_types():
+        intern_types = InternType.get_all()  # Fetch all internship types from the database
+        return render_template('internship/list_internship_types.html', internship_types=intern_types)
+
+    # Add a new internship type
+    @app.route('/internship/types/add', methods=['GET', 'POST'])
+    def add_internship_type():
+        if request.method == 'POST':
+            name = request.form['type_name']
+            InternType.add_intern_type(name)  # Add the new type to the database
+            flash('Internship Type added successfully!', 'success')
+            return redirect(url_for('list_internship_types'))
+        return render_template('internship/add_internship_type.html')
+
+    # Edit an internship type
+    @app.route('/internship/types/edit/<int:intern_type_id>', methods=['GET', 'POST'])
+    def edit_internship_type(intern_type_id):
+        intern_type = InternType.get_by_id(intern_type_id)  # Get the intern type by ID
+        if not intern_type:
+            flash('Internship Type not found!', 'danger')
+            return redirect(url_for('list_internship_types'))
+
+        if request.method == 'POST':
+            name = request.form['type_name']
+            InternType.update_intern_type(intern_type_id, name)  # Update the internship type
+            flash('Internship Type updated successfully!', 'success')
+            return redirect(url_for('list_internship_types'))
+
+        return render_template('internship/edit_internship_type.html', intern_type=intern_type)
+
+    # Delete an internship type
+    @app.route('/internship/types/delete/<int:intern_type_id>', methods=['POST'])
+    def delete_internship_type(intern_type_id):
+        intern_type = InternType.get_by_id(intern_type_id)  # Fetch the intern type to ensure it exists
+        if not intern_type:
+            flash('Internship Type not found!', 'danger')
+            return redirect(url_for('list_internship_types'))
+
+        InternType.delete_intern_type(intern_type_id)  # Delete the internship type
+        flash('Internship Type deleted successfully!', 'success')
+        return redirect(url_for('list_internship_types'))

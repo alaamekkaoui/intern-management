@@ -20,18 +20,18 @@ def create_all_tables():
             name VARCHAR(100) NOT NULL
         )
         """)
-        cursor.execute("""
-    CREATE TABLE IF NOT EXISTS teachers (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        first_name VARCHAR(100) NOT NULL,
-        last_name VARCHAR(100) NOT NULL,
-        email VARCHAR(100) NOT NULL,
-        phone VARCHAR(15),
-        department_id INT,
-        FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-""")
 
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS teachers (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            first_name VARCHAR(100) NOT NULL,
+            last_name VARCHAR(100) NOT NULL,
+            email VARCHAR(100) NOT NULL,
+            phone VARCHAR(15),
+            department_id INT,
+            FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+        """)
 
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS cars (
@@ -41,6 +41,15 @@ def create_all_tables():
         )
         """)
 
+        # Create the intern_types table
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS intern_types (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(100) NOT NULL UNIQUE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+        """)
+
+        # Modify the internships table to include intern_type_id as a foreign key
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS internships (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -49,10 +58,12 @@ def create_all_tables():
             end_date DATE NOT NULL,
             teacher_id INT,
             car_id INT,
+            intern_type_id INT,  -- Adding foreign key to intern_types
             status ENUM('pending', 'canceled', 'done') DEFAULT 'pending',
             FOREIGN KEY (teacher_id) REFERENCES teachers(id) ON DELETE SET NULL,
-            FOREIGN KEY (car_id) REFERENCES cars(id) ON DELETE SET NULL
-        )
+            FOREIGN KEY (car_id) REFERENCES cars(id) ON DELETE SET NULL,
+            FOREIGN KEY (intern_type_id) REFERENCES intern_types(id) ON DELETE SET NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
         """)
 
         conn.commit()

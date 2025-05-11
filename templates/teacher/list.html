@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Liste des Enseignants{% endblock %}
+
+{% block content %}
+    <h2>Liste des Enseignants</h2>
+
+    <a href="/teacher/add" class="btn btn-primary mb-3">Ajouter un Enseignant</a>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Département</th>
+                <th>Email</th>
+                <th>Téléphone</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for teacher in teachers %}
+                <tr>
+                    <td>{{ teacher.first_name }} {{ teacher.last_name }}</td>
+                    <td>{{ teacher.department_name }}</td>
+                    <td>{{ teacher.email }}</td>
+                    <td>{{ teacher.phone }}</td>
+                    <td>
+                        <a href="/teacher/{{ teacher.id }}" class="btn btn-info">Détails</a>
+                        <a href="/teacher/edit/{{ teacher.id }}" class="btn btn-warning">Éditer</a>
+                        <form action="/teacher/delete/{{ teacher.id }}" method="POST" style="display:inline;">
+    <!-- This is to simulate a DELETE request -->
+    <input type="hidden" name="_method" value="DELETE">
+    <button type="submit" class="btn btn-danger">Supprimer</button>
+</form>
+
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

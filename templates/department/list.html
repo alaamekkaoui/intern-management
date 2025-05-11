@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Departments{% endblock %}
+
+{% block content %}
+<h3>Departments</h3>
+<a href="/department/add" class="btn btn-success mb-3">Add Department</a>
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for dept in departments %}
+    <tr>
+      <td>{{ dept.name }}</td>
+      <td>
+        <a href="/department/edit/{{ dept.id }}" class="btn btn-sm btn-primary">Edit</a>
+        
+        <!-- Delete Button -->
+        <form action="/department/delete/{{ dept.id }}" method="POST" style="display:inline;">
+          <input type="hidden" name="_method" value="DELETE">
+          <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

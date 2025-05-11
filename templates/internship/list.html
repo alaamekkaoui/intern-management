@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Liste des Stages{% endblock %}
+
+{% block content %}
+    <h2>Liste des Stages</h2>
+
+    <a href="/internship/add" class="btn btn-primary mb-3">Ajouter un Stage</a>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nom de l'enseignant</th>
+                <th>Type de stage</th>
+                <th>Car nécessaire</th>
+                <th>Début</th>
+                <th>Fin</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for internship in internships %}
+                <tr>
+                    <td>{{ internship.teacher_name }}</td>
+                    <td>{{ internship.intern_type }}</td>
+                    <td>{{ internship.car_needed }}</td>
+                    <td>{{ internship.start_date }}</td>
+                    <td>{{ internship.end_date }}</td>
+                    <td>
+                        <a href="/internship/{{ internship.id }}" class="btn btn-info">Détails</a>
+                        <a href="/internship/cancel/{{ internship.id }}" class="btn btn-warning">Annuler</a>
+                        <a href="/internship/done/{{ internship.id }}" class="btn btn-success">Terminer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

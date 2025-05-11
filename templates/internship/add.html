@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Ajouter un Stage{% endblock %}
+
+{% block content %}
+    <h2>Ajouter un Stage</h2>
+
+    <form action="/internship/add" method="POST">
+        <div class="form-group">
+            <label for="teacher_id">Enseignant</label>
+            <select class="form-control" id="teacher_id" name="teacher_id">
+                {% for teacher in teachers %}
+                    <option value="{{ teacher.id }}">{{ teacher.first_name }} {{ teacher.last_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="intern_type">Type de Stage</label>
+            <select class="form-control" id="intern_type" name="intern_type">
+                <option value="fieldwork">Travail de terrain</option>
+                <option value="labwork">Travail en laboratoire</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="car_needed">Voiture nécessaire</label>
+            <input type="checkbox" class="form-check-input" id="car_needed" name="car_needed">
+        </div>
+        <div class="form-group">
+            <label for="start_date">Date de début</label>
+            <input type="date" class="form-control" id="start_date" name="start_date" required>
+        </div>
+        <div class="form-group">
+            <label for="end_date">Date de fin</label>
+            <input type="date" class="form-control" id="end_date" name="end_date" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Ajouter</button>
+    </form>
+{% endblock %}

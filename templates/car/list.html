@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Liste des Voitures{% endblock %}
+
+{% block content %}
+    <h2>Liste des Voitures</h2>
+
+    <a href="/car/add" class="btn btn-primary mb-3">Ajouter une Voiture</a>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Type</th>
+                <th>Coût par jour</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for car in cars %}
+                <tr>
+                    <td>{{ car.name }}</td>
+                    <td>{{ car.car_type }}</td>
+                    <td>{{ car.cost_per_day }} €</td>
+                    <td>
+                        <a href="/car/{{ car.id }}" class="btn btn-info">Détails</a>
+                        <a href="/car/delete/{{ car.id }}" class="btn btn-danger">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

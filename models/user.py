@@ -73,3 +73,61 @@ class User:
         cursor.close()
         connection.close()
         return user
+
+    @staticmethod
+    def add_dummy_car_user():
+        User.add_user('car', 'car', 'car')
+
+    @staticmethod
+    def update_profile(user_id, username, role, old_password=None, new_password=None):
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        # Fetch current user
+        cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
+        user = cursor.fetchone()
+        if not user:
+            cursor.close()
+            conn.close()
+            return False, "Utilisateur introuvable."
+        # If changing password, check old password
+        if new_password:
+            if not old_password or not check_password_hash(user['password'], old_password):
+                cursor.close()
+                conn.close()
+                return False, "Ancien mot de passe incorrect."
+            hashed_password = generate_password_hash(new_password)
+            cursor.execute("""
+                UPDATE users SET username=%s, role=%s, password=%s WHERE id=%s
+            """, (username, role, hashed_password, user_id))
+        else:
+            cursor.execute("""
+                UPDATE users SET username=%s, role=%s WHERE id=%s
+            """, (username, role, user_id))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return True, "Profil mis à jour avec succès."
+
+    @staticmethod
+    def update(user_id, username, password, role):
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        try:
+            if password:
+                hashed_password = generate_password_hash(password)
+                cursor.execute("""
+                    UPDATE users SET username=%s, role=%s, password=%s WHERE id=%s
+                """, (username, role, hashed_password, user_id))
+            else:
+                cursor.execute("""
+                    UPDATE users SET username=%s, role=%s WHERE id=%s
+                """, (username, role, user_id))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            return True
+        except Exception as e:
+            print(f"Error updating user: {e}", "danger")
+            cursor.close()
+            conn.close()
+            return False

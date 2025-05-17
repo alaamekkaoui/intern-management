@@ -1,11 +1,14 @@
-from flask import flash, redirect, render_template
+from flask import flash, redirect, render_template, request
 from models.department import Department
 import traceback
 class DepartmentController:
     # List all departments
     def list_departments(self):
+        name = request.args.get('name', '').strip()
         departments = Department.get_all()
-        return render_template('department/list.html', departments=departments)
+        if name:
+            departments = [d for d in departments if name.lower() in d.get('name', '').lower()]
+        return render_template('department/list.html', departments=departments, filter_name=name)
 
     # Show form to add a new department
     def show_add_department_form(self):

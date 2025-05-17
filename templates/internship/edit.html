@@ -18,18 +18,31 @@
 
         <div class="form-group">
             <label for="intern_type">Type de Stage</label>
-            <select class="form-control" id="intern_type" name="intern_type">
-                {% for type in internship_types %}
-                    <option value="{{ type.id }}" {% if type.id == internship.intern_type %} selected {% endif %}>
-                        {{ type.name }}
-                    </option>
-                {% endfor %}
-            </select>
+            <select class="form-control" id="intern_type" name="intern_type_id">
+    {% for type in intern_types %}
+        <option value="{{ type.id }}" {% if type.id == internship.intern_type_id %} selected {% endif %}>
+            {{ type.name }}
+        </option>
+    {% endfor %}
+</select>
+
         </div>
 
         <div class="form-group">
             <label for="car_needed">Voiture nécessaire</label>
             <input type="checkbox" class="form-check-input" id="car_needed" name="car_needed" {% if internship.car_needed %} checked {% endif %}>
+        </div>
+
+        <!-- Conditional car dropdown -->
+        <div class="form-group" id="carSelection" style="display: {% if internship.car_needed %}block{% else %}none{% endif %};">
+            <label for="car_id">Choisir une voiture</label>
+            <select class="form-control" id="car_id" name="car_id">
+                {% for car in cars %}
+                    <option value="{{ car.id }}" {% if car.id == internship.car_id %} selected {% endif %}>
+                        {{ car.model }} - {{ car.brand }} - {{ car.license_plate }}
+                    </option>
+                {% endfor %}
+            </select>
         </div>
 
         <div class="form-group">
@@ -47,4 +60,16 @@
 
     <br>
     <a href="{{ url_for('internship_list') }}">Retour à la Liste des Stages</a>
+
+    <script>
+        const carNeededCheckbox = document.getElementById('car_needed');
+        const carSelectionDiv = document.getElementById('carSelection');
+
+        function toggleCarSelection() {
+            carSelectionDiv.style.display = carNeededCheckbox.checked ? 'block' : 'none';
+        }
+
+        carNeededCheckbox.addEventListener('change', toggleCarSelection);
+        window.addEventListener('DOMContentLoaded', toggleCarSelection);
+    </script>
 {% endblock %}

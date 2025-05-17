@@ -1,15 +1,37 @@
 {% extends 'base.html' %}
 
-{% block title %}Departments{% endblock %}
+{% block title %}Liste des Départements{% endblock %}
 
 {% block content %}
-<h3>Departments</h3>
-<a href="/department/add" class="btn btn-success mb-3">Add Department</a>
+<h3><i class="bi bi-building"></i> Liste des Départements</h3>
+<form method="get" class="row g-2 mb-3 align-items-end">
+  <div class="col-md-6">
+    <label for="filter_name" class="form-label">Nom du département</label>
+    <input type="text" id="filter_name" name="name" class="form-control" placeholder="Rechercher par nom" value="{{ filter_name|default('') }}">
+  </div>
+  <div class="col-md-3">
+    <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-search"></i> Filtrer</button>
+  </div>
+  <div class="col-md-3">
+    <a href="/department" class="btn btn-outline-secondary w-100">Réinitialiser</a>
+  </div>
+</form>
+<button class="btn btn-success mb-3 add-dept-btn" type="button" data-bs-toggle="collapse" data-bs-target="#addDeptForm" aria-expanded="false" aria-controls="addDeptForm"><i class="bi bi-plus-circle"></i> Ajouter un Département</button>
+<div class="collapse mb-3" id="addDeptForm">
+  <form method="POST" action="/department/add" class="border rounded p-3 bg-light">
+    <div class="mb-3">
+      <label>Nom</label>
+      <input type="text" name="name" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Valider</button>
+    <button type="button" class="btn btn-secondary ms-2 cancel-add-dept-btn" data-bs-toggle="collapse" data-bs-target="#addDeptForm"><i class="bi bi-x-circle"></i> Annuler</button>
+  </form>
+</div>
 <table class="table table-bordered">
   <thead>
     <tr>
-      <th>Name</th>
-      <th>Actions</th>
+      <th><i class="bi bi-card-text"></i> Nom</th>
+      <th><i class="bi bi-gear"></i> Actions</th>
     </tr>
   </thead>
   <tbody>
@@ -17,16 +39,61 @@
     <tr>
       <td>{{ dept.name }}</td>
       <td>
-        <a href="/department/edit/{{ dept.id }}" class="btn btn-sm btn-primary">Edit</a>
-        
-        <!-- Delete Button -->
+        <button class="btn btn-sm btn-primary edit-dept-btn" type="button" data-bs-toggle="collapse" data-bs-target="#editDeptForm{{ dept.id }}" aria-expanded="false" aria-controls="editDeptForm{{ dept.id }}"><i class="bi bi-pencil"></i></button>
         <form action="/department/delete/{{ dept.id }}" method="POST" style="display:inline;">
-          <input type="hidden" name="_method" value="DELETE">
-          <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+          <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce département ?');"><i class="bi bi-trash"></i></button>
+        </form>
+      </td>
+    </tr>
+    <tr class="collapse" id="editDeptForm{{ dept.id }}">
+      <td colspan="2">
+        <form action="/department/edit/{{ dept.id }}" method="POST" class="border rounded p-3 bg-light">
+          <div class="mb-3">
+            <label for="name{{ dept.id }}">Nom du Département :</label>
+            <input type="text" id="name{{ dept.id }}" name="name" value="{{ dept.name }}" required class="form-control">
+          </div>
+          <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> Enregistrer</button>
+          <button type="button" class="btn btn-secondary ms-2 cancel-edit-dept-btn" data-bs-toggle="collapse" data-bs-target="#editDeptForm{{ dept.id }}"><i class="bi bi-x-circle"></i> Annuler</button>
         </form>
       </td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
+<!-- Bootstrap 5 JS for collapse -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Only one add/edit form open at a time
+    function closeAllDeptForms(except) {
+        document.querySelectorAll('.collapse').forEach(collapse => {
+            if ('#' + collapse.id !== except) {
+                collapse.classList.remove('show');
+            }
+        });
+    }
+    document.querySelectorAll('.add-dept-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            closeAllDeptForms('#addDeptForm');
+        });
+    });
+    document.querySelectorAll('.edit-dept-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const target = btn.getAttribute('data-bs-target');
+            closeAllDeptForms(target);
+        });
+    });
+    document.querySelectorAll('.cancel-add-dept-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelector('#addDeptForm').classList.remove('show');
+        });
+    });
+    document.querySelectorAll('.cancel-edit-dept-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const target = btn.getAttribute('data-bs-target');
+            document.querySelector(target).classList.remove('show');
+        });
+    });
+});
+</script>
 {% endblock %}

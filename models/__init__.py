@@ -1,10 +1,28 @@
 from db import get_db_connection
+from config import Config
+from models.user import User
 
 def create_all_tables():
     try:
+        # Connect to MySQL server (no database specified)
+        import mysql.connector
+        server_conn = mysql.connector.connect(
+            host=Config.DB_HOST,
+            user=Config.DB_USER,
+            password=Config.DB_PASSWORD
+        )
+        server_cursor = server_conn.cursor()
+        # Drop and recreate the database
+        server_cursor.execute(f"DROP DATABASE IF EXISTS {Config.DB_NAME}")
+        server_cursor.execute(f"CREATE DATABASE {Config.DB_NAME}")
+        server_cursor.close()
+        server_conn.close()
+
+        # Now connect to the new database
         conn = get_db_connection()
         cursor = conn.cursor()
 
+        # Recreate tables
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -36,9 +54,14 @@ def create_all_tables():
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS cars (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            model VARCHAR(100),
-            plate_number VARCHAR(20) NOT NULL UNIQUE
-        )
+            name VARCHAR(255) NOT NULL,
+            model VARCHAR(100) NOT NULL,
+            car_type VARCHAR(100) NOT NULL,
+            brand VARCHAR(100) NOT NULL,
+            license_plate VARCHAR(50) NOT NULL,
+            average_cost_per_day DECIMAL(10, 2) NOT NULL,
+            available_count INT NOT NULL
+        );
         """)
 
         # Create the intern_types table
@@ -69,6 +92,51 @@ def create_all_tables():
         conn.commit()
         cursor.close()
         conn.close()
-        print("✅ All tables created successfully.")
+        print("✅ Database dropped, recreated, and all tables created successfully.")
     except Exception as e:
         print(f"❌ Error creating tables: {e}")
+
+
+def insert_dummy_data():
+    try:
+        # Insert dummy users using add_user method
+        User.add_user('teacher', 'teacher', 'teacher')
+        User.add_dummy_car_user()
+        # Insert dummy departments
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO departments (name) VALUES
+            ('Computer Science'),
+            ('Mathematics')
+        """)
+        # Insert dummy teachers
+        cursor.execute("""
+            INSERT INTO teachers (first_name, last_name, email, phone, department_id) VALUES
+            ('Alice', 'Smith', 'alice.smith@example.com', '1234567890', 1),
+            ('Bob', 'Johnson', 'bob.johnson@example.com', '0987654321', 2)
+        """)
+        # Insert dummy cars
+        cursor.execute("""
+            INSERT INTO cars (name, model, car_type, brand, license_plate, average_cost_per_day, available_count) VALUES
+            ('Car A', '4x4', 'SUV', 'Toyota', 'ABC-123', 50.00, 2),
+            ('Car B', 'Bus', 'Minibus', 'Mercedes', 'XYZ-789', 120.00, 1)
+        """)
+        # Insert dummy intern types
+        cursor.execute("""
+            INSERT INTO intern_types (name) VALUES
+            ('Research'),
+            ('Fieldwork')
+        """)
+        # Insert dummy internships
+        cursor.execute("""
+            INSERT INTO internships (title, start_date, end_date, teacher_id, car_id, intern_type_id, status) VALUES
+            ('AI Research', '2024-07-01', '2024-08-01', 1, 1, 1, 'pending'),
+            ('Math Fieldwork', '2024-07-15', '2024-08-15', 2, NULL, 2, 'pending')
+        """)
+        conn.commit()
+        cursor.close()
+        conn.close()
+        print("✅ Dummy data inserted successfully.")
+    except Exception as e:
+        print(f"❌ Error inserting dummy data: {e}")

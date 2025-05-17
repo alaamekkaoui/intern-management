@@ -1,12 +1,22 @@
 from flask import render_template, request, redirect, flash
 from models.teacher import Teacher
 from models.department import Department
+from models.internship import Internship
 
 class TeacherController:
     # List all teachers
     def list_teachers(self):
+        name = request.args.get('name', '').strip()
+        department_id = request.args.get('department_id', '').strip()
         teachers = Teacher.get_all()
-        return render_template('teacher/list.html', teachers=teachers)
+        # Filter by name (partial match, case-insensitive)
+        if name:
+            teachers = [t for t in teachers if name.lower() in (t.get('first_name', '') + ' ' + t.get('last_name', '')).lower()]
+        # Filter by department_id
+        if department_id:
+            teachers = [t for t in teachers if str(t.get('department_id')) == department_id]
+        departments = Department.get_all()
+        return render_template('teacher/list.html', teachers=teachers, departments=departments, filter_name=name, filter_department_id=department_id)
 
     # Show form to add a new teacher
     def show_add_teacher_form(self):
@@ -67,3 +77,10 @@ class TeacherController:
             flash(f"Une erreur s'est produite lors de la suppression de l'enseignant: {str(e)}", 'danger')
 
         return redirect('/teacher')
+
+    # Show details for a single teacher
+    def show_teacher_details(self, teacher_id):
+        teacher = Teacher.get_by_id(teacher_id)
+        internships = Internship.get_by_teacher_id(teacher_id)
+        departments = Department.get_all()
+        return render_template('teacher/details.html', teacher=teacher, internships=internships, departments=departments)

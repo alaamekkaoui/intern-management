@@ -3,77 +3,110 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1 class="mt-4">Welcome to the Internship Management App</h1>
+<div class="container mt-4">
+    <h1 class="mb-4">Welcome to the Internship Management App</h1>
 
-    <div class="mt-4">
-        <h2>Admin Dashboard</h2>
-
-        <!-- Car Management Routes -->
-        <section>
-            <h3>Car Management</h3>
-            <ul>
-                <li><a href="{{ url_for('car_list') }}">List Cars</a></li>
-                <li><a href="{{ url_for('add_car') }}">Add New Car</a></li>
-                <li><a href="{{ url_for('edit_car', car_id=1) }}">Edit Car (Example)</a></li>
-                <li><a href="{{ url_for('delete_car', car_id=1) }}">Delete Car (Example)</a></li>
-            </ul>
-        </section>
-
-        <!-- Department Management Routes -->
-        <section>
-            <h3>Department Management</h3>
-            <ul>
-                <li><a href="{{ url_for('department_list') }}">List Departments</a></li>
-                <li><a href="{{ url_for('add_department') }}">Add New Department</a></li>
-                <li><a href="{{ url_for('edit_department', department_id=1) }}">Edit Department (Example)</a></li>
-                <li><a href="{{ url_for('delete_department', department_id=1) }}">Delete Department (Example)</a></li>
-            </ul>
-        </section>
-
-        <!-- Internship Management Routes -->
-        <section>
-            <h3>Internship Management</h3>
-            <ul>
-                <li><a href="{{ url_for('internship_list') }}">List Internships</a></li>
-                <li><a href="{{ url_for('add_internship') }}">Add New Internship</a></li>
-                <li><a href="{{ url_for('edit_internship', internship_id=1) }}">Edit Internship (Example)</a></li>
-                <li><a href="{{ url_for('delete_internship', internship_id=1) }}">Delete Internship (Example)</a></li>
-                <li><a href="{{ url_for('cancel_internship', internship_id=1) }}">Cancel Internship (Example)</a></li>
-                <li><a href="{{ url_for('mark_as_done', internship_id=1) }}">Mark Internship as Done (Example)</a></li>
-            </ul>
-        </section>
-
-        <!-- Internship Type Routes -->
-        <section>
-            <h3>Internship Type Management</h3>
-            <ul>
-                <li><a href="{{ url_for('list_internship_types') }}">List Internship Types</a></li>
-                <li><a href="{{ url_for('add_internship_type') }}">Add New Internship Type</a></li>
-                <li><a href="{{ url_for('edit_internship_type', intern_type_id=1) }}">Edit Internship Type (Example)</a></li>
-                <li><a href="{{ url_for('delete_internship_type', intern_type_id=1) }}">Delete Internship Type (Example)</a></li>
-            </ul>
-        </section>
-
-        <!-- User Management Routes -->
-        <section>
-            <h3>User Management</h3>
-            <ul>
-                <li><a href="{{ url_for('login_user') }}">Login</a></li>
-                <li><a href="{{ url_for('logout_user') }}">Logout</a></li>
-                <li><a href="{{ url_for('register_user') }}">Register</a></li>
-                <li><a href="{{ url_for('list_users') }}">List Users</a></li>
-                <li><a href="{{ url_for('edit_user', user_id=1) }}">Edit User (Example)</a></li>
-            </ul>
-        </section>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
 
         <!-- Admin Actions -->
-        <section>
-            <h3>Admin Actions</h3>
-            <form action="{{ url_for('create_default_admin') }}" method="get">
-                <button type="submit" class="btn btn-danger mt-4">Create Default Admin</button>
-            </form>
-        </section>
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Admin Actions</h5>
+                    <form action="{{ url_for('create_default_admin') }}" method="get">
+                        <button type="submit" class="btn btn-danger">Create Default Admin</button>
+                    </form>
+                    <form action="{{ url_for('reset_database') }}" method="post" style="margin-top: 10px;">
+                        <button type="submit" class="btn btn-warning" onclick="return confirm('Are you sure you want to reset the database? This will delete all data!');">Reset Database</button>
+                    </form>
+                    <form action="{{ url_for('insert_dummy_data_route') }}" method="post" style="margin-top: 10px;">
+                        <button type="submit" class="btn btn-info">Insert Dummy Data</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Car Management -->
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Car Management</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('car_list') }}">List Cars</a></li>
+                        <li><a href="{{ url_for('add_car') }}">Add New Car</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Department Management -->
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Department Management</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('department_list') }}">List Departments</a></li>
+                        <li><a href="{{ url_for('add_department') }}">Add New Department</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Teacher Management -->
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Teacher Management</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('teacher_list') }}">List Teachers</a></li>
+                        <li><a href="{{ url_for('add_teacher') }}">Add New Teacher</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Internship Management -->
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Internship Management</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('internship_list') }}">List Internships</a></li>
+                        <li><a href="{{ url_for('add_internship') }}">Add New Internship</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Internship Type Management -->
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Internship Type Management</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('list_internship_types') }}">List Internship Types</a></li>
+                        <li><a href="{{ url_for('add_internship_type') }}">Add New Internship Type</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Management -->
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">User Management</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('login_user') }}">Login</a></li>
+                        <li><a href="{{ url_for('logout_user') }}">Logout</a></li>
+                        <li><a href="{{ url_for('register_user') }}">Register</a></li>
+                        <li><a href="{{ url_for('list_users') }}">List Users</a></li>
+                        <li><a href="{{ url_for('edit_user', user_id=1) }}">Edit User (Example)</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 {% endblock %}

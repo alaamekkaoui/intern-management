@@ -1,4 +1,4 @@
-from flask import flash, redirect, render_template, request, url_for
+from flask import flash, redirect, render_template, request, url_for, session
 from controllers.car_controller import CarController
 from controllers.department_controller import DepartmentController
 from controllers.internship_controller import InternshipController
@@ -7,6 +7,7 @@ from controllers.teacher_controller import TeacherController
 from models.department import Department
 from models.intern_type import InternType
 from models.teacher import Teacher
+import os
 #from models.teacher import Teacher
 
 
@@ -37,6 +38,11 @@ def init_routes(app):
     @app.route('/car/delete/<int:car_id>', methods=['POST'])
     def delete_car(car_id):
         return car_controller.delete_car(car_id)
+
+    @app.route('/car/<int:car_id>')
+    def car_details(car_id):
+        return car_controller.show_car_details(car_id)
+
     # -------------------------------------------------Department routes-------------------------------------------------
     @app.route('/department')
     def department_list():
@@ -108,7 +114,7 @@ def init_routes(app):
             return internship_controller.edit_internship(internship_id, request)
         # Fetch intern types from the database
         intern_types = InternType.get_all()  
-        return internship_controller.show_edit_internship_form(internship_id, intern_types)
+        return internship_controller.show_edit_internship_form(internship_id)
 
 
     @app.route('/internship/delete/<int:internship_id>', methods=['POST'])
@@ -123,6 +129,9 @@ def init_routes(app):
     def mark_as_done(internship_id):
         return internship_controller.mark_as_done(internship_id)
 
+    @app.route('/internship/details/<int:internship_id>')
+    def internship_details(internship_id):
+        return internship_controller.show_internship_details(internship_id)
     
     # -------------------------------------------------User routes-------------------------------------------------
     @app.route('/login', methods=['GET', 'POST'])
@@ -135,9 +144,11 @@ def init_routes(app):
     def logout_user():
         return user_controller.logout()
     
-    @app.route('/register')
+    @app.route('/register', methods=['GET', 'POST'])
     def register_user():
-        return user_controller.register(request)
+        if request.method == 'POST':
+            return user_controller.register(request)
+        return user_controller.show_register_form()
 
     @app.route('/user')
     def list_users():
@@ -148,6 +159,10 @@ def init_routes(app):
         if request.method == 'POST':
             return user_controller.edit_user(user_id, request)
         return user_controller.show_edit_user_form(user_id)
+    
+    @app.route('/user/update_profile', methods=['POST'])
+    def update_profile():
+        return user_controller.update_profile(request)
     
     # -------------------------------------------------Inter Type routes-------------------------------------------------
 
@@ -193,3 +208,17 @@ def init_routes(app):
         InternType.delete_intern_type(intern_type_id)  # Delete the internship type
         flash('Internship Type deleted successfully!', 'success')
         return redirect(url_for('list_internship_types'))
+
+    @app.route('/refresh_app', methods=['POST'])
+    def refresh_app():
+        if 'role' not in session or session['role'] != 'admin':
+            flash('Unauthorized: Only admin can refresh the app.', 'danger')
+            return redirect(url_for('index'))
+        # Touch app.py to trigger Flask reloader
+        app_py_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'app.py')
+        try:
+            os.utime(app_py_path, None)
+            flash('App code refresh triggered!', 'info')
+        except Exception as e:
+            flash(f'Failed to refresh app: {e}', 'danger')
+        return redirect(url_for('index'))

@@ -3,38 +3,134 @@
 {% block title %}Liste des Enseignants{% endblock %}
 
 {% block content %}
-    <h2>Liste des Enseignants</h2>
-
-    <a href="/teacher/add" class="btn btn-primary mb-3">Ajouter un Enseignant</a>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Nom</th>
-                <th>Département</th>
-                <th>Email</th>
-                <th>Téléphone</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for teacher in teachers %}
-                <tr>
-                    <td>{{ teacher.first_name }} {{ teacher.last_name }}</td>
-                    <td>{{ teacher.department_name }}</td>
-                    <td>{{ teacher.email }}</td>
-                    <td>{{ teacher.phone }}</td>
-                    <td>
-                        <a href="/teacher/{{ teacher.id }}" class="btn btn-info">Détails</a>
-                        <a href="/teacher/edit/{{ teacher.id }}" class="btn btn-warning">Éditer</a>
-                        <form action="/teacher/delete/{{ teacher.id }}" method="POST" style="display:inline;">
-    <!-- This is to simulate a DELETE request -->
-    <input type="hidden" name="_method" value="DELETE">
-    <button type="submit" class="btn btn-danger">Supprimer</button>
-</form>
-
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<h2><i class="bi bi-person-badge"></i> Liste des Enseignants</h2>
+<button class="btn btn-success mb-3 add-teacher-btn" type="button" data-bs-toggle="collapse" data-bs-target="#addTeacherForm" aria-expanded="false" aria-controls="addTeacherForm"><i class="bi bi-plus-circle"></i> Ajouter un Enseignant</button>
+<div class="collapse mb-3" id="addTeacherForm">
+  <form method="POST" action="/teacher/add" class="border rounded p-3 bg-light">
+    <div class="mb-3">
+      <label for="first_name">Prénom</label>
+      <input type="text" id="first_name" name="first_name" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="last_name">Nom</label>
+      <input type="text" id="last_name" name="last_name" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="phone">Téléphone</label>
+      <input type="text" id="phone" name="phone" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="department">Département</label>
+      <select id="department" name="department" class="form-control" required>
+        {% for department in departments %}
+          <option value="{{ department.id }}">{{ department.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Ajouter</button>
+    <button type="button" class="btn btn-secondary ms-2 cancel-add-teacher-btn" data-bs-toggle="collapse" data-bs-target="#addTeacherForm"><i class="bi bi-x-circle"></i> Annuler</button>
+  </form>
+</div>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Département</th>
+            <th>Email</th>
+            <th>Téléphone</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for teacher in teachers %}
+        <tr>
+            <td>{{ teacher.first_name }} {{ teacher.last_name }}</td>
+            <td>{{ teacher.department_name }}</td>
+            <td>{{ teacher.email }}</td>
+            <td>{{ teacher.phone }}</td>
+            <td>
+                <a href="/teacher/{{ teacher.id }}" class="btn btn-info btn-sm"><i class="bi bi-info-circle"></i></a>
+                <button class="btn btn-primary btn-sm edit-teacher-btn" type="button" data-bs-toggle="collapse" data-bs-target="#editTeacherForm{{ teacher.id }}" aria-expanded="false" aria-controls="editTeacherForm{{ teacher.id }}"><i class="bi bi-pencil"></i></button>
+                <form action="/teacher/delete/{{ teacher.id }}" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet enseignant ?');">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </form>
+            </td>
+        </tr>
+        <tr class="collapse" id="editTeacherForm{{ teacher.id }}">
+            <td colspan="5">
+                <form method="POST" action="/teacher/edit/{{ teacher.id }}" class="border rounded p-3 bg-light">
+                  <div class="mb-3">
+                    <label for="first_name{{ teacher.id }}">Prénom</label>
+                    <input type="text" id="first_name{{ teacher.id }}" name="first_name" class="form-control" value="{{ teacher.first_name }}" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="last_name{{ teacher.id }}">Nom</label>
+                    <input type="text" id="last_name{{ teacher.id }}" name="last_name" class="form-control" value="{{ teacher.last_name }}" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="email{{ teacher.id }}">Email</label>
+                    <input type="email" id="email{{ teacher.id }}" name="email" class="form-control" value="{{ teacher.email }}" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="phone{{ teacher.id }}">Téléphone</label>
+                    <input type="text" id="phone{{ teacher.id }}" name="phone" class="form-control" value="{{ teacher.phone }}" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="department{{ teacher.id }}">Département</label>
+                    <select id="department{{ teacher.id }}" name="department" class="form-control" required>
+                      {% for department in departments %}
+                        <option value="{{ department.id }}" {% if department.id == teacher.department_id %}selected{% endif %}>{{ department.name }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> Enregistrer</button>
+                  <button type="button" class="btn btn-secondary ms-2 cancel-edit-teacher-btn" data-bs-toggle="collapse" data-bs-target="#editTeacherForm{{ teacher.id }}"><i class="bi bi-x-circle"></i> Annuler</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<!-- Bootstrap 5 JS for collapse -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Only one add/edit form open at a time
+    function closeAllTeacherForms(except) {
+        document.querySelectorAll('.collapse').forEach(collapse => {
+            if ('#' + collapse.id !== except) {
+                collapse.classList.remove('show');
+            }
+        });
+    }
+    document.querySelectorAll('.add-teacher-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            closeAllTeacherForms('#addTeacherForm');
+        });
+    });
+    document.querySelectorAll('.edit-teacher-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const target = btn.getAttribute('data-bs-target');
+            closeAllTeacherForms(target);
+        });
+    });
+    document.querySelectorAll('.cancel-add-teacher-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelector('#addTeacherForm').classList.remove('show');
+        });
+    });
+    document.querySelectorAll('.cancel-edit-teacher-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const target = btn.getAttribute('data-bs-target');
+            document.querySelector(target).classList.remove('show');
+        });
+    });
+});
+</script>
 {% endblock %}

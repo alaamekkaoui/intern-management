@@ -12,13 +12,13 @@ class Car:
         return cars
 
     @staticmethod
-    def add_car(car_type, average_cost_per_day, available_count):
+    def add_car(name, model, car_type, brand, license_plate, average_cost_per_day, available_count):
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("""
-            INSERT INTO cars (car_type, average_cost_per_day, available_count)
-            VALUES (%s, %s, %s)
-        """, (car_type, average_cost_per_day, available_count))
+            INSERT INTO cars (name, model, car_type, brand, license_plate, average_cost_per_day, available_count)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """, (name, model, car_type, brand, license_plate, average_cost_per_day, available_count))
         conn.commit()
         cursor.close()
         conn.close()
@@ -34,14 +34,19 @@ class Car:
         return car
 
     @staticmethod
-    def update_car(car_id, car_type, average_cost_per_day, available_count):
+    def update_car(car_id, name, car_type, brand, license_plate, average_cost_per_day, available_count):
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("""
             UPDATE cars
-            SET car_type = %s, average_cost_per_day = %s, available_count = %s
+            SET name = %s,
+                car_type = %s,
+                brand = %s,
+                license_plate = %s,
+                average_cost_per_day = %s,
+                available_count = %s
             WHERE id = %s
-        """, (car_type, average_cost_per_day, available_count, car_id))
+        """, (name, car_type, brand, license_plate, average_cost_per_day, available_count, car_id))
         conn.commit()
         cursor.close()
         conn.close()
@@ -54,13 +59,23 @@ class Car:
         conn.commit()
         cursor.close()
         conn.close()
-        
+
     @staticmethod
     def get_all_types():
-        connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
-        cursor.execute("SELECT DISTINCT type FROM cars")  # Assuming 'cars' table has a 'type' column
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT DISTINCT car_type FROM cars")
         car_types = cursor.fetchall()
         cursor.close()
-        connection.close()
+        conn.close()
         return car_types
+
+    @staticmethod
+    def get_all_models():
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT DISTINCT model FROM cars")
+        models = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return models

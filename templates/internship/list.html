@@ -3,36 +3,233 @@
 {% block title %}Liste des Stages{% endblock %}
 
 {% block content %}
-    <h2>Liste des Stages</h2>
-
-    <a href="/internship/add" class="btn btn-primary mb-3">Ajouter un Stage</a>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Nom de l'enseignant</th>
-                <th>Type de stage</th>
-                <th>Voiture nécessaire</th>
-                <th>Début</th>
-                <th>Fin</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for internship in internships %}
-                <tr>
-                    <td>{{ internship.first_name }} {{ internship.last_name }}</td> <!-- Teacher name -->
-                    <td>{{ internship.intern_type.name }}</td> <!-- Type of internship -->
-                    <td>{{ 'Oui' if internship.car_needed else 'Non' }}</td>
-                    <td>{{ internship.start_date }}</td>
-                    <td>{{ internship.end_date }}</td>
-                    <td>
-                        <a href="/internship/edit/{{ internship.id }}" class="btn btn-warning">Modifier</a>
-                        <a href="/internship/cancel/{{ internship.id }}" class="btn btn-danger">Annuler</a>
-                        <a href="/internship/done/{{ internship.id }}" class="btn btn-success">Terminer</a>
-                        <a href="/internship/details/{{ internship.id }}" class="btn btn-info">Détails</a>
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<h2><i class="bi bi-journal-text"></i> Liste des Stages</h2>
+<button class="btn btn-success mb-3 add-internship-btn" type="button" data-bs-toggle="collapse" data-bs-target="#addInternshipForm" aria-expanded="false" aria-controls="addInternshipForm"><i class="bi bi-plus-circle"></i> Ajouter un Stage</button>
+<div class="collapse mb-3" id="addInternshipForm">
+  <form action="/internship/add" method="POST" class="border rounded p-3 bg-light">
+    <div class="form-group mb-2">
+      <label for="teacher_id">Enseignant</label>
+      <select class="form-control" id="teacher_id" name="teacher_id" required>
+        {% for teacher in teachers %}
+          <option value="{{ teacher.id }}">{{ teacher.first_name }} {{ teacher.last_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group mb-2">
+      <label for="intern_type_id">Type de Stage</label>
+      <select class="form-control" id="intern_type_id" name="intern_type_id" required>
+        {% for type in intern_types %}
+          <option value="{{ type.id }}">{{ type.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group form-check mb-2">
+      <input type="checkbox" class="form-check-input" id="car_needed_add" name="car_needed" />
+      <label class="form-check-label" for="car_needed_add">Voiture nécessaire</label>
+    </div>
+    <div class="form-group mb-2" id="car_type_div_add" style="display:none;">
+      <label for="car_id">Voiture</label>
+      <select class="form-control" id="car_id_add" name="car_id">
+        {% for car in cars %}
+          <option value="{{ car.id }}">{{ car.model }} - {{ car.brand }} - {{ car.license_plate }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group mb-2">
+      <label for="start_date">Date de début</label>
+      <input type="date" class="form-control" id="start_date" name="start_date" required>
+    </div>
+    <div class="form-group mb-2">
+      <label for="end_date">Date de fin</label>
+      <input type="date" class="form-control" id="end_date" name="end_date" required>
+    </div>
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Ajouter</button>
+    <button type="button" class="btn btn-secondary ms-2 cancel-add-internship-btn" data-bs-toggle="collapse" data-bs-target="#addInternshipForm"><i class="bi bi-x-circle"></i> Annuler</button>
+  </form>
+</div>
+<form class="row g-2 mb-3" method="get" action="">
+    <div class="col-md-4">
+        <input type="text" class="form-control" name="teacher_name" placeholder="Nom de l'enseignant" value="{{ request.args.get('teacher_name', '') }}">
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-search"></i> Rechercher</button>
+    </div>
+</form>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nom de l'enseignant</th>
+            <th>Type de stage</th>
+            <th>Voiture nécessaire</th>
+            <th>Statut</th>
+            <th>Début</th>
+            <th>Fin</th>
+            <th>Actions</th>
+        </tr>
+        <tr>
+            <th></th>
+            <th>
+                <form method="get" action="" class="mb-0">
+                    <select class="form-select form-select-sm" name="intern_type_id" onchange="this.form.submit()">
+                        <option value="">Tous</option>
+                        {% for type in intern_types %}
+                            <option value="{{ type.id }}" {% if request.args.get('intern_type_id') == type.id|string %}selected{% endif %}>{{ type.name }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </th>
+            <th>
+                <form method="get" action="" class="mb-0">
+                    <select class="form-select form-select-sm" name="car_needed" onchange="this.form.submit()">
+                        <option value="">Tous</option>
+                        <option value="1" {% if request.args.get('car_needed') == '1' %}selected{% endif %}>Oui</option>
+                        <option value="0" {% if request.args.get('car_needed') == '0' %}selected{% endif %}>Non</option>
+                    </select>
+                </form>
+            </th>
+            <th>
+                <form method="get" action="" class="mb-0">
+                    <select class="form-select form-select-sm" name="status" onchange="this.form.submit()">
+                        <option value="">Tous</option>
+                        <option value="pending" {% if request.args.get('status') == 'pending' %}selected{% endif %}>En attente</option>
+                        <option value="canceled" {% if request.args.get('status') == 'canceled' %}selected{% endif %}>Annulé</option>
+                        <option value="done" {% if request.args.get('status') == 'done' %}selected{% endif %}>Terminé</option>
+                    </select>
+                </form>
+            </th>
+            <th></th>
+            <th></th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for internship in internships %}
+        <tr>
+            <td>{{ internship.first_name }} {{ internship.last_name }}</td>
+            <td>{{ internship.intern_type if internship.intern_type else 'N/A' }}</td>
+            <td>{{ 'Oui' if internship.car_id else 'Non' }}</td>
+            <td>
+                {% if internship.status == 'pending' %}En attente{% elif internship.status == 'canceled' %}Annulé{% elif internship.status == 'done' %}Terminé{% else %}Inconnu{% endif %}
+            </td>
+            <td>{{ internship.start_date }}</td>
+            <td>{{ internship.end_date }}</td>
+            <td>
+                <a href="/internship/details/{{ internship.id }}" class="btn btn-info btn-sm"><i class="bi bi-info-circle"></i></a>
+                {% if internship.status == 'pending' %}
+                <form action="/internship/mark_done/{{ internship.id }}" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-check-circle"></i></button>
+                </form>
+                <form action="/internship/cancel/{{ internship.id }}" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-x-circle"></i></button>
+                </form>
+                {% endif %}
+                <button class="btn btn-primary btn-sm edit-internship-btn" type="button" data-bs-toggle="collapse" data-bs-target="#editInternshipForm{{ internship.id }}" aria-expanded="false" aria-controls="editInternshipForm{{ internship.id }}"><i class="bi bi-pencil"></i></button>
+                <form action="/internship/delete/{{ internship.id }}" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce stage ?');">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </form>
+            </td>
+        </tr>
+        <tr class="collapse" id="editInternshipForm{{ internship.id }}">
+            <td colspan="7">
+                <form action="/internship/edit/{{ internship.id }}" method="POST" class="border rounded p-3 bg-light">
+                    <div class="form-group mb-2">
+                        <label for="teacher_id{{ internship.id }}">Enseignant</label>
+                        <select class="form-control" id="teacher_id{{ internship.id }}" name="teacher_id" required>
+                            {% for teacher in teachers %}
+                                <option value="{{ teacher.id }}" {% if teacher.id == internship.teacher_id %}selected{% endif %}>{{ teacher.first_name }} {{ teacher.last_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label for="intern_type_id{{ internship.id }}">Type de Stage</label>
+                        <select class="form-control" id="intern_type_id{{ internship.id }}" name="intern_type_id" required>
+                            {% for type in intern_types %}
+                                <option value="{{ type.id }}" {% if type.id == internship.intern_type_id %}selected{% endif %}>{{ type.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group form-check mb-2">
+                        <input type="checkbox" class="form-check-input car-needed-edit" id="car_needed_edit{{ internship.id }}" name="car_needed" {% if internship.car_id %}checked{% endif %} />
+                        <label class="form-check-label" for="car_needed_edit{{ internship.id }}">Voiture nécessaire</label>
+                    </div>
+                    <div class="form-group mb-2 car-type-div-edit" id="car_type_div_edit{{ internship.id }}" style="display:{% if internship.car_id %}block{% else %}none{% endif %};">
+                        <label for="car_id{{ internship.id }}">Voiture</label>
+                        <select class="form-control" id="car_id{{ internship.id }}" name="car_id">
+                            {% for car in cars %}
+                                <option value="{{ car.id }}" {% if car.id == internship.car_id %}selected{% endif %}>{{ car.model }} - {{ car.brand }} - {{ car.license_plate }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label for="start_date{{ internship.id }}">Date de début</label>
+                        <input type="date" class="form-control" id="start_date{{ internship.id }}" name="start_date" value="{{ internship.start_date }}" required>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label for="end_date{{ internship.id }}">Date de fin</label>
+                        <input type="date" class="form-control" id="end_date{{ internship.id }}" name="end_date" value="{{ internship.end_date }}" required>
+                    </div>
+                    <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> Enregistrer</button>
+                    <button type="button" class="btn btn-secondary ms-2 cancel-edit-internship-btn" data-bs-toggle="collapse" data-bs-target="#editInternshipForm{{ internship.id }}"><i class="bi bi-x-circle"></i> Annuler</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<!-- Bootstrap 5 JS for collapse -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Only one add/edit form open at a time
+    function closeAllInternshipForms(except) {
+        document.querySelectorAll('.collapse').forEach(collapse => {
+            if ('#' + collapse.id !== except) {
+                collapse.classList.remove('show');
+            }
+        });
+    }
+    document.querySelectorAll('.add-internship-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            closeAllInternshipForms('#addInternshipForm');
+        });
+    });
+    document.querySelectorAll('.edit-internship-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const target = btn.getAttribute('data-bs-target');
+            closeAllInternshipForms(target);
+        });
+    });
+    document.querySelectorAll('.cancel-add-internship-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelector('#addInternshipForm').classList.remove('show');
+        });
+    });
+    document.querySelectorAll('.cancel-edit-internship-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const target = btn.getAttribute('data-bs-target');
+            document.querySelector(target).classList.remove('show');
+        });
+    });
+    // Add form car needed toggle
+    const carNeededAdd = document.getElementById('car_needed_add');
+    const carTypeDivAdd = document.getElementById('car_type_div_add');
+    if (carNeededAdd && carTypeDivAdd) {
+        carNeededAdd.addEventListener('change', function() {
+            carTypeDivAdd.style.display = this.checked ? 'block' : 'none';
+        });
+    }
+    // Edit form car needed toggle
+    document.querySelectorAll('.car-needed-edit').forEach(function(checkbox) {
+        checkbox.addEventListener('change', function() {
+            const id = this.id.replace('car_needed_edit', '');
+            const carDiv = document.getElementById('car_type_div_edit' + id);
+            if (carDiv) {
+                carDiv.style.display = this.checked ? 'block' : 'none';
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

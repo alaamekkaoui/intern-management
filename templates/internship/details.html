@@ -4,19 +4,39 @@
 
 {% block content %}
     <h2>Détails du Stage</h2>
-    <ul>
-        <li><strong>Enseignant :</strong> {{ internship.teacher_name }}</li>
-        <li><strong>Type de Stage :</strong> 
-            {% for type in internship_types %}
-                {% if type.id == internship.intern_type %}
-                    {{ type.name }}
-                {% endif %}
-            {% endfor %}
-        </li>
-        <li><strong>Voiture Nécessaire :</strong> {{ 'Oui' if internship.car_needed else 'Non' }}</li>
-        <li><strong>Date de début :</strong> {{ internship.start_date }}</li>
-        <li><strong>Date de fin :</strong> {{ internship.end_date }}</li>
-        <li><strong>Status :</strong> {{ internship.status }}</li>
-    </ul>
-    <a href="{{ url_for('internship_list') }}" class="btn btn-secondary">Retour à la Liste des Stages</a>
+    <div class="card p-4 mb-4">
+        <ul class="list-group list-group-flush mb-3" id="internshipDetailsStatic">
+            <li class="list-group-item"><strong>Enseignant :</strong> {{ internship.teacher_name }}</li>
+            <li class="list-group-item"><strong>Type de Stage :</strong> {{ internship.intern_type_name }}</li>
+            <li class="list-group-item"><strong>Voiture Nécessaire :</strong> {{ 'Oui' if internship.car_needed else 'Non' }}</li>
+            <li class="list-group-item"><strong>Voiture utilisée :</strong> {% if internship.car_model %}{{ internship.car_model }}{% if internship.license_plate %} - {{ internship.license_plate }}{% endif %}{% else %}Aucune{% endif %}</li>
+            <li class="list-group-item"><strong>Date de début :</strong> {{ internship.start_date }}</li>
+            <li class="list-group-item"><strong>Date de fin :</strong> {{ internship.end_date }}</li>
+            <li class="list-group-item"><strong>Status :</strong> {% if internship.status == 'pending' %}En attente{% elif internship.status == 'canceled' %}Annulé{% elif internship.status == 'done' %}Terminé{% else %}Inconnu{% endif %}</li>
+        </ul>
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#editInternshipFormDetail" aria-expanded="false" aria-controls="editInternshipFormDetail" onclick="document.getElementById('internshipDetailsStatic').style.display='none';"><i class="bi bi-pencil"></i> Modifier</button>
+            <form action="/internship/delete/{{ internship.id }}" method="POST" style="display:inline;">
+                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce stage ?');">
+                    <i class="bi bi-trash"></i> Supprimer
+                </button>
+            </form>
+            {% if internship.status == 'pending' %}
+            <form action="/internship/cancel/{{ internship.id }}" method="POST" style="display:inline;">
+                <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-x-circle"></i> Annuler</button>
+            </form>
+            <form action="/internship/mark_done/{{ internship.id }}" method="POST" style="display:inline;">
+                <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-check-circle"></i> Terminer</button>
+            </form>
+            {% endif %}
+            <a href="{{ url_for('internship_list') }}" class="btn btn-secondary btn-sm"><i class="bi bi-arrow-left"></i> Retour à la Liste des Stages</a>
+        </div>
+        <div class="collapse" id="editInternshipFormDetail">
+            {# Inline edit form can be added here if needed, similar to list page #}
+            <div class="alert alert-info">Pour modifier ce stage, utilisez la page de modification depuis la liste.</div>
+            <button type="button" class="btn btn-secondary ms-2 mt-2" data-bs-toggle="collapse" data-bs-target="#editInternshipFormDetail" onclick="document.getElementById('internshipDetailsStatic').style.display='block';"><i class="bi bi-x-circle"></i> Annuler</button>
+        </div>
+    </div>
+    <!-- Bootstrap 5 JS for collapse -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock %}

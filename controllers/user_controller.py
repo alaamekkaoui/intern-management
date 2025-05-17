@@ -15,6 +15,7 @@ class UserController:
         if user:
             session['user_id'] = user['id']
             session['role'] = user['role']
+            session['username'] = user['username']
             flash('Bienvenue, vous êtes connecté.', 'success')  # Success message
             return redirect('/')
         else:
@@ -38,17 +39,24 @@ class UserController:
         role = request.form['role']
         
         # Create new user and handle success/failure
-        if User.create(username, password, role):
+        try:
+            User.add_user(username, password, role)
             flash('L\'utilisateur a été enregistré avec succès.', 'success')  # Success message
             return redirect('/login')
-        else:
-            flash("Une erreur s'est produite lors de l'enregistrement de l'utilisateur.", 'danger')  # Error message
+        except Exception as e:
+            flash(f"Une erreur s'est produite lors de l'enregistrement de l'utilisateur: {e}", 'danger')  # Error message
             return redirect('/register')
 
     # Show the list of users (admin only)
     def list_users(self):
+        username = request.args.get('username', '').strip()
+        role = request.args.get('role', '').strip()
         users = User.get_all_users()
-        return render_template('user/list.html', users=users)
+        if username:
+            users = [u for u in users if username.lower() in u.get('username', '').lower()]
+        if role:
+            users = [u for u in users if u.get('role') == role]
+        return render_template('user/list.html', users=users, filter_username=username, filter_role=role)
 
     # Show edit form for a specific user (admin only)
     def show_edit_user_form(self, user_id):
@@ -67,3 +75,22 @@ class UserController:
         else:
             flash("Une erreur s'est produite lors de la mise à jour de l'utilisateur.", 'danger')  # Error message
             return redirect(f'/user/edit/{user_id}')
+
+    # Handle inline profile update (username, role, password)
+    def update_profile(self, request):
+        user_id = session.get('user_id')
+        if not user_id:
+            flash('Vous devez être connecté.', 'danger')
+            return redirect('/login')
+        username = request.form['username']
+        role = request.form['role']
+        old_password = request.form.get('old_password')
+        new_password = request.form.get('new_password')
+        success, message = User.update_profile(user_id, username, role, old_password, new_password)
+        if success:
+            session['username'] = username
+            session['role'] = role
+            flash(message, 'success')
+        else:
+            flash(message, 'danger')
+        return redirect('/user')

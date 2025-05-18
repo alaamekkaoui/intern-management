@@ -101,7 +101,7 @@
                                 {% endif %}
                                 <li><a class="dropdown-item" href="/user">Profil</a></li>
                                 <li><a class="dropdown-item" href="/logout"><i class="bi bi-box-arrow-right"></i> Déconnexion</a></li>
-                                {% if session.get('role') == 'admin' %}
+                                {% if session.get('role') == 'admin' and debug_mode %}
                                     <li><a class="dropdown-item small text-muted" href="/debug">Debug</a></li>
                                 {% endif %}
                             </ul>

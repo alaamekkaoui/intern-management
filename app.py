@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from flask import Flask, redirect, render_template, url_for, flash, session
+from flask import Flask, redirect, render_template, request, url_for, flash, session
 from models import create_all_tables, insert_dummy_data
 from models.user import User
 from models.internship import Internship
@@ -16,6 +16,8 @@ load_dotenv()
 app = Flask(__name__)
 
 app.secret_key = os.getenv('SECRET_KEY',)
+debug_mode = os.getenv('DEBUG_MODE', '') 
+debug_code = os.getenv('DEBUG_CODE', '')
 
 # ------------------------------------------------------
 # Define the route for the index page (your home page)
@@ -58,17 +60,22 @@ def insert_dummy_data_route():
     flash('Dummy data inserted!', 'success')
     return redirect(url_for('index'))
 
-@app.route('/debug')
-def debug():
-    if not session.get('user_id'):
-        flash('Vous devez être connecté pour accéder au debug.', 'danger')
-        return redirect(url_for('login_user'))
-    return render_template('debug.html')
 
-@app.errorhandler(404)
-def not_found(e):
-    return render_template('404.html'), 404
+@app.route('/debug', methods=['GET', 'POST'])
+def debug_route():
+        if  debug_mode == False:
+            return render_template('404.html'), 404
 
+        if request.method == 'POST':
+            code = request.form.get('code', '')
+            if code == debug_code:
+                return render_template('debug.html', success=True, debug_mode=True)
+            else:
+                return render_template('debug.html', success=False, debug_mode=True)
+
+        return render_template('debug.html', debug_mode=True)
+# ------------------------------------------------------
+# Initialize the database and create tables
 init_routes(app)
 
 if __name__ == '__main__':

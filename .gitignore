@@ -94,7 +94,7 @@ Pipfile.lock
 
 # dotenv environment variables
 .env
-.env.*
+
 
 # Database files
 *.sqlite3

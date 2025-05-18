@@ -1,4 +1,4 @@
-from flask import flash, redirect, render_template, request, url_for, session, jsonify
+from flask import abort, flash, redirect, render_template, request, url_for, session, jsonify
 from controllers.car_controller import CarController
 from controllers.department_controller import DepartmentController
 from controllers.internship_controller import InternshipController

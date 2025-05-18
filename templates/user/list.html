@@ -4,7 +4,7 @@
 <div class="container mt-4">
     <div class="row justify-content-center mb-4">
         <div class="col-md-8">
-            <div class="card shadow-lg border-success" style="font-size:1.15rem;">
+            <div class="card shadow-lg" style="font-size:1.15rem; border:none;">
                 <div class="card-body text-center">
                     <h4 class="card-title mb-3">Mon Profil</h4>
                     <p class="mb-1"><strong>Nom d'utilisateur :</strong> {{ session.get('username', 'Invité') }}</p>
@@ -66,122 +66,114 @@
         </div>
     </div>
     {% if session.get('role') == 'admin' %}
-    <form method="get" class="row g-2 mb-3 align-items-end">
-        <div class="col-md-5">
-            <label for="filter_username" class="form-label">Nom d'utilisateur</label>
-            <input type="text" id="filter_username" name="username" class="form-control" placeholder="Rechercher par nom" value="{{ filter_username|default('') }}">
-        </div>
-        <div class="col-md-3">
-            <label for="filter_role" class="form-label">Rôle</label>
-            <select id="filter_role" name="role" class="form-control">
-                <option value="">Tous</option>
-                <option value="admin" {% if filter_role == 'admin' %}selected{% endif %}>Admin</option>
-                <option value="teacher" {% if filter_role == 'teacher' %}selected{% endif %}>Professeur</option>
-                <option value="car" {% if filter_role == 'car' %}selected{% endif %}>Logistique</option>
-            </select>
-        </div>
-        <div class="col-md-2">
-            <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-search"></i> Filtrer</button>
-        </div>
-        <div class="col-md-2">
-            <a href="/user" class="btn btn-outline-secondary w-100">Réinitialiser</a>
-        </div>
-    </form>
+    <h2 class="mb-0 text-success"><i class="bi bi-people"></i> Liste des Utilisateurs</h2>
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+        <button class="btn btn-success" type="button" data-bs-toggle="collapse" data-bs-target="#addUserForm" aria-expanded="false" aria-controls="addUserForm"><i class="bi bi-plus-circle"></i> Ajouter un Utilisateur</button>
+    </div>
+    <div class="collapse mb-3" id="addUserForm">
+        <form method="post" action="/register" class="border rounded p-3 bg-light">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <input type="text" class="form-control" name="username" placeholder="Nom d'utilisateur" required>
+                </div>
+                <div class="col-md-4">
+                    <input type="password" class="form-control" name="password" placeholder="Mot de passe" required>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" name="role" required>
+                        <option value="">Rôle</option>
+                        <option value="admin">Admin</option>
+                        <option value="teacher">Professeur</option>
+                        <option value="car">Logistique</option>
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-success w-100"><i class="bi bi-check-circle"></i></button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <table class="table table-striped">
+        <thead class="table-success">
+            <tr>
+                <th>Nom d'utilisateur</th>
+                <th>Rôle</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.username }}</td>
+                <td>{% if user.role == 'admin' %}Admin{% elif user.role == 'teacher' %}Professeur{% elif user.role == 'car' %}Logistique{% else %}Aucun{% endif %}</td>
+                <td>
+                    <button class="btn btn-primary btn-sm edit-user-btn" type="button" data-bs-toggle="collapse" data-bs-target="#editUserForm{{ user.id }}" aria-expanded="false" aria-controls="editUserForm{{ user.id }}"><i class="bi bi-pencil"></i></button>
+                    <form method="post" action="/user/delete/{{ user.id }}" style="display:inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');">
+                        <button type="submit" class="btn btn-danger btn-sm ms-1"><i class="bi bi-trash"></i></button>
+                    </form>
+                </td>
+            </tr>
+            <tr class="collapse" id="editUserForm{{ user.id }}">
+                <td colspan="3">
+                    <form method="post" action="/user/edit/{{ user.id }}" class="border rounded p-3 bg-light d-flex flex-column flex-md-row align-items-md-center gap-2">
+                        <div class="row g-2 align-items-end flex-grow-1">
+                            <div class="col-md-4">
+                                <input type="text" class="form-control" name="username" value="{{ user.username }}" required>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select" name="role" required>
+                                    <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Admin</option>
+                                    <option value="teacher" {% if user.role == 'teacher' %}selected{% endif %}>Professeur</option>
+                                    <option value="car" {% if user.role == 'car' %}selected{% endif %}>Logistique</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="password" class="form-control" name="password" placeholder="Nouveau mot de passe (optionnel)">
+                            </div>
+                        </div>
+                        <div class="d-flex flex-column gap-2 ms-md-2">
+                            <button type="submit" class="btn btn-success w-100"><i class="bi bi-check-circle"></i> Enregistrer</button>
+                            <button type="button" class="btn btn-secondary w-100" data-bs-toggle="collapse" data-bs-target="#editUserForm{{ user.id }}"><i class="bi bi-x-circle"></i> Annuler</button>
+                        </div>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <!-- Non-admin: show only Mon Profil, username, role, and a Modify button. Show password form only when Modify is clicked. -->
     <div class="row justify-content-center">
-        <div class="col-lg-10">
+        <div class="col-md-6">
             <div class="card shadow-sm">
-                <div class="card-body">
-                    <h4 class="card-title mb-3">Liste des utilisateurs
-                        <a href="/register" class="btn btn-success btn-sm ms-3"><i class="bi bi-person-plus"></i> Créer un compte</a>
-                    </h4>
-                    <table class="table table-striped table-hover align-middle">
-                        <thead class="table-success">
-                            <tr>
-                                <th>Nom d'utilisateur</th>
-                                <th>Rôle</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for user in users %}
-                            <tr>
-                                <td>{{ user.username }}</td>
-                                <td>
-                                    {% if user.role == 'admin' %}Admin{% elif user.role == 'teacher' %}Professeur{% elif user.role == 'car' %}Logistique{% else %}Aucun{% endif %}
-                                </td>
-                                <td>
-                                    <button class="btn btn-primary btn-sm edit-user-btn" type="button" data-bs-toggle="collapse" data-bs-target="#editUserForm{{ user.id }}" aria-expanded="false" aria-controls="editUserForm{{ user.id }}">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <form action="/user/delete/{{ user.id }}" method="POST" style="display:inline;">
-                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                            <tr class="collapse" id="editUserForm{{ user.id }}">
-                                <td colspan="3">
-                                    <form action="/user/edit/{{ user.id }}" method="POST" class="border rounded p-3 bg-light">
-                                        <div class="row g-2 align-items-center">
-                                            <div class="col-md-4">
-                                                <label class="form-label">Nom d'utilisateur</label>
-                                                <input type="text" class="form-control" name="username" value="{{ user.username }}" {% if session['role'] != 'admin' %}readonly{% endif %} required>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label class="form-label">Rôle</label>
-                                                {% if session['role'] == 'admin' %}
-                                                <select class="form-select" name="role" required>
-                                                    <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Admin</option>
-                                                    <option value="teacher" {% if user.role == 'teacher' %}selected{% endif %}>Professeur</option>
-                                                    <option value="car" {% if user.role == 'car' %}selected{% endif %}>Logistique</option>
-                                                </select>
-                                                {% else %}
-                                                <input type="text" class="form-control" value="{% if user.role == 'admin' %}Admin{% elif user.role == 'teacher' %}Professeur{% elif user.role == 'car' %}Logistique{% else %}Aucun{% endif %}" readonly>
-                                                <input type="hidden" name="role" value="{{ user.role }}">
-                                                {% endif %}
-                                            </div>
-                                            <div class="col-md-5">
-                                                <label class="form-label">Nouveau mot de passe</label>
-                                                <input type="password" class="form-control" name="password" placeholder="Laisser vide pour ne pas changer">
-                                            </div>
-                                        </div>
-                                        <div class="mt-3 text-end">
-                                            <button type="submit" class="btn btn-success">Enregistrer</button>
-                                            <button type="button" class="btn btn-secondary ms-2 cancel-edit-btn" data-bs-toggle="collapse" data-bs-target="#editUserForm{{ user.id }}">Annuler</button>
-                                        </div>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                
+                    <script>
+                    function showProfileEditForm() {
+                        document.getElementById('profileEditForm').style.display = 'block';
+                        document.getElementById('profileStatic').style.display = 'none';
+                    }
+                    function hideProfileEditForm() {
+                        document.getElementById('profileEditForm').style.display = 'none';
+                        document.getElementById('profileStatic').style.display = '';
+                    }
+                    </script>
                 </div>
             </div>
         </div>
     </div>
     {% endif %}
 </div>
-<!-- Bootstrap 5 JS for collapse -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Only one edit form open at a time
-    document.querySelectorAll('.edit-user-btn').forEach(btn => {
+    document.querySelectorAll('.edit-user-btn').forEach(function(btn) {
         btn.addEventListener('click', function() {
-            const target = btn.getAttribute('data-bs-target');
-            document.querySelectorAll('.collapse').forEach(collapse => {
+            var target = btn.getAttribute('data-bs-target');
+            document.querySelectorAll('.collapse').forEach(function(collapse) {
                 if ('#' + collapse.id !== target) {
                     collapse.classList.remove('show');
                 }
             });
-        });
-    });
-    // Cancel button closes the form
-    document.querySelectorAll('.cancel-edit-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const target = btn.getAttribute('data-bs-target');
-            document.querySelector(target).classList.remove('show');
         });
     });
 });

@@ -32,9 +32,8 @@
             <label for="car_needed">Voiture nécessaire</label>
             <input type="checkbox" class="form-check-input" id="car_needed" name="car_needed" {% if internship.car_needed %} checked {% endif %}>
         </div>
-
         <!-- Conditional car dropdown -->
-        <div class="form-group" id="carSelection" style="display: {% if internship.car_needed %}block{% else %}none{% endif %};">
+        <div class="form-group" id="carSelection" style="display: {{ 'block' if internship.car_needed else 'none' }};">
             <label for="car_id">Choisir une voiture</label>
             <select class="form-control" id="car_id" name="car_id">
                 {% for car in cars %}

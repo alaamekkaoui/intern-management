@@ -1,8 +1,13 @@
 import os
 from dotenv import load_dotenv
-from flask import Flask, redirect, render_template, url_for, flash
+from flask import Flask, redirect, render_template, url_for, flash, session
 from models import create_all_tables, insert_dummy_data
 from models.user import User
+from models.internship import Internship
+from models.department import Department
+from models.teacher import Teacher
+from models.car import Car
+from models.intern_type import InternType
 from routes import init_routes  
 
 
@@ -16,7 +21,19 @@ app.secret_key = os.getenv('SECRET_KEY',)
 # Define the route for the index page (your home page)
 @app.route('/')
 def index():
-    return render_template('index.html')  
+    role = session.get('role')
+    counts = {}
+    if role in ['admin', 'teacher', 'car']:
+        counts['internship_count'] = len(Internship.get_all())
+    if role in ['admin', 'teacher']:
+        counts['teacher_count'] = len(Teacher.get_all())
+        counts['department_count'] = len(Department.get_all())
+        counts['intern_type_count'] = len(InternType.get_all())
+    if role in ['admin', 'car']:
+        counts['car_count'] = len(Car.get_all())
+    if role == 'admin':
+        counts['user_count'] = len(User.get_all_users())
+    return render_template('index.html', **counts)  
 # ------------------------------------------------------
 # Route to create the default admin if it doesn't exist
 @app.route('/create_default_admin')
@@ -38,6 +55,13 @@ def insert_dummy_data_route():
     insert_dummy_data()
     flash('Dummy data inserted!', 'success')
     return redirect(url_for('index'))
+
+@app.route('/debug')
+def debug():
+    if not session.get('user_id'):
+        flash('Vous devez être connecté pour accéder au debug.', 'danger')
+        return redirect(url_for('login_user'))
+    return render_template('debug.html')
 
 init_routes(app)
 

@@ -74,7 +74,6 @@ class InternshipController:
             flash('Le stage a été annulé avec succès.', 'success')  # Success message
         else:
             flash("Une erreur s'est produite lors de l'annulation du stage.", 'danger')  # Error message
-
         return redirect('/internship')
 
     # Delete an internship
@@ -94,7 +93,6 @@ class InternshipController:
             flash('Le stage a été marqué comme terminé.', 'success')  # Success message
         else:
             flash("Une erreur s'est produite lors de la mise à jour du stage.", 'danger')  # Error message
-
         return redirect('/internship')
 
     # Show edit form for a specific internship

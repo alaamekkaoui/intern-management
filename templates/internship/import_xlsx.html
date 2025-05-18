@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Importer des Types de Stage (XLSX){% endblock %}
+
+{% block content %}
+<h2>Importer des Types de Stage depuis un fichier XLSX</h2>
+<form method="post" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label for="file" class="form-label">Fichier XLSX</label>
+        <input type="file" class="form-control" id="file" name="file" accept=".xlsx" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Importer</button>
+    <a href="/internship/types" class="btn btn-secondary ms-2">Retour à la liste</a>
+</form>
+{% endblock %} 

@@ -4,7 +4,13 @@
 
 {% block content %}
 <h2><i class="bi bi-truck"></i> Liste des Voitures</h2>
-<button class="btn btn-success mb-3 add-car-btn" type="button" data-bs-toggle="collapse" data-bs-target="#addCarForm" aria-expanded="false" aria-controls="addCarForm"><i class="bi bi-plus-circle"></i> Ajouter une Voiture</button>
+<div class="d-flex align-items-center gap-2 mb-2">
+    {% if session.get('role') in ['admin', 'car'] %}
+        <button class="btn btn-success add-car-btn" type="button" data-bs-toggle="collapse" data-bs-target="#addCarForm" aria-expanded="false" aria-controls="addCarForm"><i class="bi bi-plus-circle"></i> Ajouter une Voiture</button>
+    {% endif %}
+    <a href="/car/export/pdf" class="btn btn-outline-danger"><i class="bi bi-file-earmark-pdf"></i> Exporter PDF</a>
+    <a href="/car/export/xlsx" class="btn btn-outline-success"><i class="bi bi-file-earmark-excel"></i> Exporter XLSX</a>
+</div>
 <div class="collapse mb-3" id="addCarForm">
   <form action="/car/add" method="POST" class="border rounded p-3 bg-light">
     <div class="form-group">
@@ -53,7 +59,7 @@
     <button type="button" class="btn btn-secondary ms-2 cancel-add-car-btn" data-bs-toggle="collapse" data-bs-target="#addCarForm"><i class="bi bi-x-circle"></i> Annuler</button>
   </form>
 </div>
-<form method="get" class="row g-2 mb-3 align-items-end">
+<form method="get" class="row g-2 mb-3 align-items-end" id="carFilterForm">
   <div class="col-md-3">
     <label for="filter_name" class="form-label">Nom</label>
     <input type="text" id="filter_name" name="name" class="form-control" placeholder="Rechercher par nom" value="{{ filter_name|default('') }}">
@@ -70,22 +76,10 @@
     </select>
   </div>
   <div class="col-md-2">
-    <label for="filter_car_type" class="form-label">Type</label>
-    <input type="text" id="filter_car_type" name="car_type" class="form-control" placeholder="Type" value="{{ filter_car_type|default('') }}">
-  </div>
-  <div class="col-md-2">
-    <label for="filter_availability" class="form-label">Disponibilité</label>
-    <select id="filter_availability" name="availability" class="form-control">
-      <option value="">Toutes</option>
-      <option value="available" {% if filter_availability == 'available' %}selected{% endif %}>Disponible</option>
-      <option value="unavailable" {% if filter_availability == 'unavailable' %}selected{% endif %}>Indisponible</option>
-    </select>
-  </div>
-  <div class="col-md-2">
     <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-search"></i> Filtrer</button>
   </div>
-  <div class="col-md-1">
-    <a href="/car" class="btn btn-outline-secondary w-100">Réinitialiser</a>
+  <div class="col-md-3">
+    <a href="/car" class="btn btn-outline-secondary w-100 px-5">Réinitialiser</a>
   </div>
 </form>
 <table class="table">
@@ -104,19 +98,24 @@
         {% for car in cars %}
         <tr>
             <td>{{ car.name }}</td>
+            <td>{{ car.model }}</td>
             <td>{{ car.car_type }}</td>
             <td>{{ car.brand }}</td>
             <td>{{ car.license_plate }}</td>
             <td>{{ car.average_cost_per_day }}</td>
             <td>{{ available_today[car.id] if available_today and car.id in available_today else car.available_count }}</td>
             <td>
+                {% if session.get('role') in ['admin', 'car'] %}
+                    <button class="btn btn-primary btn-sm edit-car-btn" type="button" data-bs-toggle="collapse" data-bs-target="#editCarForm{{ car.id }}" aria-expanded="false" aria-controls="editCarForm{{ car.id }}"><i class="bi bi-pencil"></i></button>
+                    {% if session.get('role') == 'admin' %}
+                        <form action="/car/delete/{{ car.id }}" method="POST" style="display:inline;">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette voiture ?');">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    {% endif %}
+                {% endif %}
                 <a href="/car/{{ car.id }}" class="btn btn-info btn-sm"><i class="bi bi-info-circle"></i></a>
-                <button class="btn btn-primary btn-sm edit-car-btn" type="button" data-bs-toggle="collapse" data-bs-target="#editCarForm{{ car.id }}" aria-expanded="false" aria-controls="editCarForm{{ car.id }}"><i class="bi bi-pencil"></i></button>
-                <form action="/car/delete/{{ car.id }}" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette voiture ?');">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </form>
             </td>
         </tr>
         <tr class="collapse" id="editCarForm{{ car.id }}">
@@ -125,6 +124,10 @@
                     <div class="form-group">
                         <label for="name{{ car.id }}">Nom du véhicule</label>
                         <input type="text" class="form-control" id="name{{ car.id }}" name="name" value="{{ car.name }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="model{{ car.id }}">Modèle du véhicule</label>
+                        <input type="text" class="form-control" id="model{{ car.id }}" name="model" value="{{ car.model }}" required>
                     </div>
                     <div class="form-group">
                         <label for="car_type{{ car.id }}">Type de voiture</label>
@@ -154,8 +157,6 @@
         {% endfor %}
     </tbody>
 </table>
-<!-- Bootstrap 5 JS for collapse -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Only one add/edit form open at a time
@@ -202,6 +203,19 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    // Auto-submit on model change
+    document.getElementById('filter_model').addEventListener('change', function() {
+        document.getElementById('carFilterForm').submit();
+    });
+    // Auto-submit on name input (with debounce)
+    let nameInput = document.getElementById('filter_name');
+    let debounceTimeout;
+    nameInput.addEventListener('input', function() {
+        clearTimeout(debounceTimeout);
+        debounceTimeout = setTimeout(function() {
+            document.getElementById('carFilterForm').submit();
+        }, 500);
+    });
 });
 </script>
 {% endblock %}

@@ -3,31 +3,80 @@
 {% block title %}Liste des Enseignants{% endblock %}
 
 {% block content %}
-<h2><i class="bi bi-person-badge"></i> Liste des Enseignants</h2>
-<button class="btn btn-success mb-3 add-teacher-btn" type="button" data-bs-toggle="collapse" data-bs-target="#addTeacherForm" aria-expanded="false" aria-controls="addTeacherForm"><i class="bi bi-plus-circle"></i> Ajouter un Enseignant</button>
-<div class="collapse mb-3" id="addTeacherForm">
+<h2 class="mb-0 text-success"><i class="bi bi-person-lines-fill"></i> Liste des Enseignants</h2>
+<div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+    {% if session.get('role') in ['admin', 'teacher'] %}
+        <button class="btn btn-success add-teacher-btn" type="button" data-bs-toggle="collapse" data-bs-target="#addTeacherForm" aria-expanded="false" aria-controls="addTeacherForm"><i class="bi bi-plus-circle"></i> Ajouter un Enseignant</button>
+    {% endif %}
+    <a href="/teacher/export/pdf" class="btn btn-outline-danger"><i class="bi bi-file-earmark-pdf"></i> Exporter PDF</a>
+    <a href="/teacher/export/xlsx" class="btn btn-outline-success"><i class="bi bi-file-earmark-excel"></i> Exporter XLSX</a>
+    <a href="/teacher/sample/xlsx" class="btn btn-outline-secondary"><i class="bi bi-download"></i> Télécharger modèle import XLSX</a>
+    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#importTeacherModal"><i class="bi bi-upload"></i> Importer enseignants XLSX</button>
+</div>
+<form class="row g-2 align-items-end mb-3" method="get" action="">
+    <div class="col-auto">
+        <input type="text" class="form-control" name="name" placeholder="Nom de l'enseignant" value="{{ filter_name }}">
+    </div>
+    <div class="col-auto">
+        <select class="form-select" name="department_id" onchange="this.form.submit()">
+            <option value="">Département</option>
+            {% for department in departments %}
+                <option value="{{ department.id }}" {% if filter_department_id == department.id|string %}selected{% endif %}>{{ department.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-primary"><i class="bi bi-search"></i> Rechercher</button>
+    </div>
+    <div class="col-auto">
+        <a href="/teacher" class="btn btn-outline-secondary">Réinitialiser</a>
+    </div>
+</form>
+<!-- Import Modal -->
+<div class="modal fade" id="importTeacherModal" tabindex="-1" aria-labelledby="importTeacherModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="/teacher/import/xlsx" enctype="multipart/form-data">
+        <div class="modal-header">
+          <h5 class="modal-title" id="importTeacherModalLabel">Importer enseignants (XLSX)</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="file" class="form-label">Fichier XLSX</label>
+            <input type="file" class="form-control" id="file" name="file" accept=".xlsx" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Importer</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div><div class="collapse mb-3" id="addTeacherForm">
   <form method="POST" action="/teacher/add" class="border rounded p-3 bg-light">
     <div class="mb-3">
       <label for="first_name">Prénom</label>
-      <input type="text" id="first_name" name="first_name" class="form-control" required>
+      <input type="text" id="first_name" name="first_name" class="form-control" required value="{{ form_first_name|default('') }}">
     </div>
     <div class="mb-3">
       <label for="last_name">Nom</label>
-      <input type="text" id="last_name" name="last_name" class="form-control" required>
+      <input type="text" id="last_name" name="last_name" class="form-control" required value="{{ form_last_name|default('') }}">
     </div>
     <div class="mb-3">
       <label for="email">Email</label>
-      <input type="email" id="email" name="email" class="form-control" required>
+      <input type="email" id="email" name="email" class="form-control" required value="{{ form_email|default('') }}">
     </div>
     <div class="mb-3">
       <label for="phone">Téléphone</label>
-      <input type="text" id="phone" name="phone" class="form-control" required>
+      <input type="text" id="phone" name="phone" class="form-control" required value="{{ form_phone|default('') }}">
     </div>
     <div class="mb-3">
       <label for="department">Département</label>
       <select id="department" name="department" class="form-control" required>
         {% for department in departments %}
-          <option value="{{ department.id }}">{{ department.name }}</option>
+          <option value="{{ department.id }}" {% if form_department_id|default('') == department.id|string %}selected{% endif %}>{{ department.name }}</option>
         {% endfor %}
       </select>
     </div>
@@ -36,7 +85,7 @@
   </form>
 </div>
 <table class="table">
-    <thead>
+    <thead class="table-success">
         <tr>
             <th>Nom</th>
             <th>Département</th>
@@ -53,13 +102,17 @@
             <td>{{ teacher.email }}</td>
             <td>{{ teacher.phone }}</td>
             <td>
+                {% if session.get('role') in ['admin', 'teacher'] %}
+                    <button class="btn btn-primary btn-sm edit-teacher-btn" type="button" data-bs-toggle="collapse" data-bs-target="#editTeacherForm{{ teacher.id }}" aria-expanded="false" aria-controls="editTeacherForm{{ teacher.id }}"><i class="bi bi-pencil"></i></button>
+                    {% if session.get('role') == 'admin' %}
+                        <form action="/teacher/delete/{{ teacher.id }}" method="POST" style="display:inline;">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet enseignant ?');">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    {% endif %}
+                {% endif %}
                 <a href="/teacher/{{ teacher.id }}" class="btn btn-info btn-sm"><i class="bi bi-info-circle"></i></a>
-                <button class="btn btn-primary btn-sm edit-teacher-btn" type="button" data-bs-toggle="collapse" data-bs-target="#editTeacherForm{{ teacher.id }}" aria-expanded="false" aria-controls="editTeacherForm{{ teacher.id }}"><i class="bi bi-pencil"></i></button>
-                <form action="/teacher/delete/{{ teacher.id }}" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet enseignant ?');">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </form>
             </td>
         </tr>
         <tr class="collapse" id="editTeacherForm{{ teacher.id }}">
@@ -98,37 +151,17 @@
     </tbody>
 </table>
 <!-- Bootstrap 5 JS for collapse -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Only one add/edit form open at a time
-    function closeAllTeacherForms(except) {
-        document.querySelectorAll('.collapse').forEach(collapse => {
-            if ('#' + collapse.id !== except) {
-                collapse.classList.remove('show');
-            }
-        });
-    }
-    document.querySelectorAll('.add-teacher-btn').forEach(btn => {
+    // Only one edit form open at a time
+    document.querySelectorAll('.edit-teacher-btn').forEach(function(btn) {
         btn.addEventListener('click', function() {
-            closeAllTeacherForms('#addTeacherForm');
-        });
-    });
-    document.querySelectorAll('.edit-teacher-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const target = btn.getAttribute('data-bs-target');
-            closeAllTeacherForms(target);
-        });
-    });
-    document.querySelectorAll('.cancel-add-teacher-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelector('#addTeacherForm').classList.remove('show');
-        });
-    });
-    document.querySelectorAll('.cancel-edit-teacher-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const target = btn.getAttribute('data-bs-target');
-            document.querySelector(target).classList.remove('show');
+            var target = btn.getAttribute('data-bs-target');
+            document.querySelectorAll('.collapse').forEach(function(collapse) {
+                if ('#' + collapse.id !== target) {
+                    collapse.classList.remove('show');
+                }
+            });
         });
     });
 });

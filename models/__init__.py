@@ -1,6 +1,9 @@
 from db import get_db_connection
 from config import Config
 from models.user import User
+from models.internship import Internship
+from models.car import Car
+from datetime import date
 
 def create_all_tables():
     try:

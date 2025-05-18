@@ -32,22 +32,30 @@ class TeacherController:
         phone = request.form['phone']
 
         existing_teacher_by_email = Teacher.get_by_email(email)
+        existing_teacher_by_name = Teacher.get_by_name(first_name, last_name)
+        departments = Department.get_all()
+        teachers = Teacher.get_all()
+        # Filter for sticky search
+        name = request.args.get('name', '').strip()
+        department_filter = request.args.get('department_id', '').strip()
+        if name:
+            teachers = [t for t in teachers if name.lower() in (t.get('first_name', '') + ' ' + t.get('last_name', '')).lower()]
+        if department_filter:
+            teachers = [t for t in teachers if str(t.get('department_id')) == department_filter]
+
         if existing_teacher_by_email:
             flash('Un enseignant avec cet email existe déjà.', 'danger')
-            return redirect('/teacher/add')
-
-        # Check if the teacher already exists by name (first and last name)
-        existing_teacher_by_name = Teacher.get_by_name(first_name, last_name)
+            return render_template('teacher/list.html', teachers=teachers, departments=departments, filter_name=name, filter_department_id=department_filter, form_first_name=first_name, form_last_name=last_name, form_email=email, form_phone=phone, form_department_id=department_id)
 
         if existing_teacher_by_name:
             flash('Un enseignant avec ce nom existe déjà.', 'danger')
-            return redirect('/teacher/add')
-        # Attempt to add the teacher
+            return render_template('teacher/list.html', teachers=teachers, departments=departments, filter_name=name, filter_department_id=department_filter, form_first_name=first_name, form_last_name=last_name, form_email=email, form_phone=phone, form_department_id=department_id)
         try:
             Teacher.add_teacher(first_name, last_name, department_id, email, phone)
             flash('L\'enseignant a été ajouté avec succès!', 'success')
         except Exception as e:
             flash(f"Une erreur s'est produite lors de l'ajout de l'enseignant: {str(e)}", 'danger')
+            return render_template('teacher/list.html', teachers=teachers, departments=departments, filter_name=name, filter_department_id=department_filter, form_first_name=first_name, form_last_name=last_name, form_email=email, form_phone=phone, form_department_id=department_id)
 
         return redirect('/teacher')
 

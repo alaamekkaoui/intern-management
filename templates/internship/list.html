@@ -3,8 +3,50 @@
 {% block title %}Liste des Stages{% endblock %}
 
 {% block content %}
-<h2><i class="bi bi-journal-text"></i> Liste des Stages</h2>
-<button class="btn btn-success mb-3 add-internship-btn" type="button" data-bs-toggle="collapse" data-bs-target="#addInternshipForm" aria-expanded="false" aria-controls="addInternshipForm"><i class="bi bi-plus-circle"></i> Ajouter un Stage</button>
+<div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
+    <h2 class="mb-0 text-success"><i class="bi bi-journal-text"></i> Liste des Stages</h2>
+    <div class="d-flex gap-2">
+        {% if session.get('role') in ['admin', 'teacher'] %}
+            <button class="btn btn-success add-internship-btn" type="button" data-bs-toggle="collapse" data-bs-target="#addInternshipForm" aria-expanded="false" aria-controls="addInternshipForm"><i class="bi bi-plus-circle"></i> Ajouter un Stage</button>
+        {% endif %}
+        <a href="/internship/export/pdf" class="btn btn-outline-danger"><i class="bi bi-file-earmark-pdf"></i> Exporter PDF</a>
+        <a href="/internship/export/xlsx" class="btn btn-outline-success"><i class="bi bi-file-earmark-excel"></i> Exporter XLSX</a>
+    </div>
+</div>
+<form class="row g-2 align-items-end mb-3" method="get" action="">
+    <div class="col-auto">
+        <input type="text" class="form-control" name="teacher_name" placeholder="Nom de l'enseignant" value="{{ request.args.get('teacher_name', '') }}">
+    </div>
+    <div class="col-auto">
+        <select class="form-select" name="intern_type_id" onchange="this.form.submit()">
+            <option value="">Type de stage</option>
+            {% for type in intern_types %}
+                <option value="{{ type.id }}" {% if request.args.get('intern_type_id') == type.id|string %}selected{% endif %}>{{ type.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-auto">
+        <select class="form-select" name="car_needed" onchange="this.form.submit()">
+            <option value="">Voiture nécessaire</option>
+            <option value="1" {% if request.args.get('car_needed') == '1' %}selected{% endif %}>Oui</option>
+            <option value="0" {% if request.args.get('car_needed') == '0' %}selected{% endif %}>Non</option>
+        </select>
+    </div>
+    <div class="col-auto">
+        <select class="form-select" name="status" onchange="this.form.submit()">
+            <option value="">Statut</option>
+            <option value="pending" {% if request.args.get('status') == 'pending' %}selected{% endif %}>En attente</option>
+            <option value="canceled" {% if request.args.get('status') == 'canceled' %}selected{% endif %}>Annulé</option>
+            <option value="done" {% if request.args.get('status') == 'done' %}selected{% endif %}>Terminé</option>
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-primary"><i class="bi bi-search"></i> Rechercher</button>
+    </div>
+    <div class="col-auto">
+        <a href="/internship" class="btn btn-outline-secondary">Réinitialiser</a>
+    </div>
+</form>
 <div class="collapse mb-3" id="addInternshipForm">
   <form action="/internship/add" method="POST" class="border rounded p-3 bg-light">
     <div class="form-group mb-2">
@@ -47,16 +89,8 @@
     <button type="button" class="btn btn-secondary ms-2 cancel-add-internship-btn" data-bs-toggle="collapse" data-bs-target="#addInternshipForm"><i class="bi bi-x-circle"></i> Annuler</button>
   </form>
 </div>
-<form class="row g-2 mb-3" method="get" action="">
-    <div class="col-md-4">
-        <input type="text" class="form-control" name="teacher_name" placeholder="Nom de l'enseignant" value="{{ request.args.get('teacher_name', '') }}">
-    </div>
-    <div class="col-md-2">
-        <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-search"></i> Rechercher</button>
-    </div>
-</form>
 <table class="table">
-    <thead>
+    <thead class="table-success">
         <tr>
             <th>Nom de l'enseignant</th>
             <th>Type de stage</th>
@@ -65,41 +99,6 @@
             <th>Début</th>
             <th>Fin</th>
             <th>Actions</th>
-        </tr>
-        <tr>
-            <th></th>
-            <th>
-                <form method="get" action="" class="mb-0">
-                    <select class="form-select form-select-sm" name="intern_type_id" onchange="this.form.submit()">
-                        <option value="">Tous</option>
-                        {% for type in intern_types %}
-                            <option value="{{ type.id }}" {% if request.args.get('intern_type_id') == type.id|string %}selected{% endif %}>{{ type.name }}</option>
-                        {% endfor %}
-                    </select>
-                </form>
-            </th>
-            <th>
-                <form method="get" action="" class="mb-0">
-                    <select class="form-select form-select-sm" name="car_needed" onchange="this.form.submit()">
-                        <option value="">Tous</option>
-                        <option value="1" {% if request.args.get('car_needed') == '1' %}selected{% endif %}>Oui</option>
-                        <option value="0" {% if request.args.get('car_needed') == '0' %}selected{% endif %}>Non</option>
-                    </select>
-                </form>
-            </th>
-            <th>
-                <form method="get" action="" class="mb-0">
-                    <select class="form-select form-select-sm" name="status" onchange="this.form.submit()">
-                        <option value="">Tous</option>
-                        <option value="pending" {% if request.args.get('status') == 'pending' %}selected{% endif %}>En attente</option>
-                        <option value="canceled" {% if request.args.get('status') == 'canceled' %}selected{% endif %}>Annulé</option>
-                        <option value="done" {% if request.args.get('status') == 'done' %}selected{% endif %}>Terminé</option>
-                    </select>
-                </form>
-            </th>
-            <th></th>
-            <th></th>
-            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -115,20 +114,24 @@
             <td>{{ internship.end_date }}</td>
             <td>
                 <a href="/internship/details/{{ internship.id }}" class="btn btn-info btn-sm"><i class="bi bi-info-circle"></i></a>
-                {% if internship.status == 'pending' %}
-                <form action="/internship/mark_done/{{ internship.id }}" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-check-circle"></i></button>
-                </form>
-                <form action="/internship/cancel/{{ internship.id }}" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-x-circle"></i></button>
-                </form>
+                {% if session.get('role') in ['admin', 'teacher'] and internship.status == 'pending' %}
+                    <form action="/internship/mark_done/{{ internship.id }}" method="POST" style="display:inline;">
+                        <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-check-circle"></i></button>
+                    </form>
+                    <form action="/internship/cancel/{{ internship.id }}" method="POST" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-x-circle"></i></button>
+                    </form>
                 {% endif %}
-                <button class="btn btn-primary btn-sm edit-internship-btn" type="button" data-bs-toggle="collapse" data-bs-target="#editInternshipForm{{ internship.id }}" aria-expanded="false" aria-controls="editInternshipForm{{ internship.id }}"><i class="bi bi-pencil"></i></button>
-                <form action="/internship/delete/{{ internship.id }}" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce stage ?');">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </form>
+                {% if session.get('role') in ['admin', 'teacher'] %}
+                    <button class="btn btn-primary btn-sm edit-internship-btn" type="button" data-bs-toggle="collapse" data-bs-target="#editInternshipForm{{ internship.id }}" aria-expanded="false" aria-controls="editInternshipForm{{ internship.id }}"><i class="bi bi-pencil"></i></button>
+                    {% if session.get('role') == 'admin' %}
+                        <form action="/internship/delete/{{ internship.id }}" method="POST" style="display:inline;">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce stage ?');">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    {% endif %}
+                {% endif %}
             </td>
         </tr>
         <tr class="collapse" id="editInternshipForm{{ internship.id }}">
@@ -154,7 +157,7 @@
                         <input type="checkbox" class="form-check-input car-needed-edit" id="car_needed_edit{{ internship.id }}" name="car_needed" {% if internship.car_id %}checked{% endif %} />
                         <label class="form-check-label" for="car_needed_edit{{ internship.id }}">Voiture nécessaire</label>
                     </div>
-                    <div class="form-group mb-2 car-type-div-edit" id="car_type_div_edit{{ internship.id }}" style="display:{% if internship.car_id %}block{% else %}none{% endif %};">
+                    <div class="form-group mb-2 car-type-div-edit" id="car_type_div_edit{{ internship.id }}" style="display:{{ 'block' if internship.car_id else 'none' }};">
                         <label for="car_id{{ internship.id }}">Voiture</label>
                         <select class="form-control" id="car_id{{ internship.id }}" name="car_id">
                             {% for car in cars %}
@@ -178,8 +181,6 @@
         {% endfor %}
     </tbody>
 </table>
-<!-- Bootstrap 5 JS for collapse -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Only one add/edit form open at a time

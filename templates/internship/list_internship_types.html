@@ -1,40 +1,95 @@
 {% extends 'base.html' %}
 
-{% block title %}Internship Types{% endblock %}
+{% block title %}Types de stage{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <h1>Internship Types</h1>
-    <div class="mt-4">
-        <a href="{{ url_for('add_internship_type') }}" class="btn btn-primary mb-3">Add New Internship Type</a>
-
-        {% if internship_types %}
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th scope="col">ID</th>
-                        <th scope="col">Type Name</th>
-                        <th scope="col">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for intern_type in internship_types %}
-                        <tr>
-                            <td>{{ intern_type.id }}</td>
-                            <td>{{ intern_type.name }}</td>
-                            <td>
-                                <a href="{{ url_for('edit_internship_type', intern_type_id=intern_type.id) }}" class="btn btn-warning btn-sm">Edit</a>
-                                <form action="{{ url_for('delete_internship_type', intern_type_id=intern_type.id) }}" method="POST" style="display:inline;">
-                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                                </form>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <p>No internship types available.</p>
+    <h2 class="text-secondary mb-4"><i class="bi bi-list-ul"></i> Types de stage</h2>
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+        {% if session.get('role') in ['admin', 'teacher'] %}
+            <button class="btn btn-success add-type-btn" type="button" data-bs-toggle="collapse" data-bs-target="#addTypeForm" aria-expanded="false" aria-controls="addTypeForm"><i class="bi bi-plus-circle"></i> Ajouter un Type</button>
         {% endif %}
+        <a href="/internship/types/export/xlsx" class="btn btn-outline-success"><i class="bi bi-file-earmark-excel"></i> Exporter XLSX</a>
+        <a href="/internship/types/sample/xlsx" class="btn btn-outline-secondary"><i class="bi bi-download"></i> Exemple XLSX</a>
+        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#importTypeModal"><i class="bi bi-upload"></i> Importer XLSX</button>
     </div>
+    {% if session.get('role') in ['admin', 'teacher'] %}
+    <div class="collapse mb-3" id="addTypeForm">
+        <form method="POST" action="/internship/types/add" class="border rounded p-3 bg-light">
+            <div class="mb-3">
+                <label for="type_name" class="form-label">Nom du type</label>
+                <input type="text" class="form-control" id="type_name" name="type_name" required>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Ajouter</button>
+            <button type="button" class="btn btn-secondary ms-2" data-bs-toggle="collapse" data-bs-target="#addTypeForm"><i class="bi bi-x-circle"></i> Annuler</button>
+        </form>
+    </div>
+    {% endif %}
+    <!-- Import Modal -->
+    <div class="modal fade" id="importTypeModal" tabindex="-1" aria-labelledby="importTypeModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form method="post" action="/internship/types/import/xlsx" enctype="multipart/form-data">
+            <div class="modal-header">
+              <h5 class="modal-title" id="importTypeModalLabel">Importer types de stage (XLSX)</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="file" class="form-label">Fichier XLSX</label>
+                <input type="file" class="form-control" id="file" name="file" accept=".xlsx" required>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-primary">Importer</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% if internship_types %}
+    <table class="table">
+        <thead class="table-success">
+            <tr>
+                <th>Nom du type</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody style="background:transparent;">
+            {% for intern_type in internship_types %}
+            <tr style="background:transparent;">
+                <td>
+                    <span id="typeNameDisplay{{ intern_type.id }}">{{ intern_type.name }}</span>
+                </td>
+                <td>
+                    {% if session.get('role') in ['admin', 'teacher'] %}
+                        <button class="btn btn-primary btn-sm edit-type-btn" type="button" data-bs-toggle="collapse" data-bs-target="#editTypeForm{{ intern_type.id }}" aria-expanded="false" aria-controls="editTypeForm{{ intern_type.id }}"><i class="bi bi-pencil"></i></button>
+                        {% if session.get('role') == 'admin' %}
+                            <form action="{{ url_for('delete_internship_type', intern_type_id=intern_type.id) }}" method="POST" style="display:inline;">
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Supprimer ce type de stage ?');"><i class="bi bi-trash"></i></button>
+                            </form>
+                        {% endif %}
+                    {% endif %}
+                </td>
+            </tr>
+            <tr class="collapse" id="editTypeForm{{ intern_type.id }}" style="background:transparent;">
+                <td colspan="2">
+                    <form method="POST" action="{{ url_for('edit_internship_type', intern_type_id=intern_type.id) }}" class="border rounded p-3 bg-light">
+                        <div class="mb-2">
+                            <label for="type_name{{ intern_type.id }}" class="form-label">Nom du type</label>
+                            <input type="text" class="form-control" id="type_name{{ intern_type.id }}" name="type_name" value="{{ intern_type.name }}" required>
+                        </div>
+                        <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> Enregistrer</button>
+                        <button type="button" class="btn btn-secondary ms-2 cancel-edit-type-btn" data-bs-toggle="collapse" data-bs-target="#editTypeForm{{ intern_type.id }}"><i class="bi bi-x-circle"></i> Annuler</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="alert alert-info">Aucun type de stage trouvé.</div>
+    {% endif %}
 </div>
 {% endblock %}

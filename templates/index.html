@@ -1,112 +1,88 @@
 {% extends 'base.html' %}
 
-{% block title %}Dashboard{% endblock %}
+{% block title %}Accueil{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <h1 class="mb-4">Welcome to the Internship Management App</h1>
-
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Bienvenue, {{ session.get('username', 'Invité') }}</h2>
+        <span class="badge bg-success fs-5">
+            {% if session.get('role') == 'admin' %}Admin{% elif session.get('role') == 'teacher' %}Professeur{% elif session.get('role') == 'car' %}Logistique{% else %}Aucun{% endif %}
+        </span>
+    </div>
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-
-        <!-- Admin Actions -->
+        {% if session.get('role') in ['admin', 'teacher', 'car'] %}
         <div class="col">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">Admin Actions</h5>
-                    <form action="{{ url_for('create_default_admin') }}" method="get">
-                        <button type="submit" class="btn btn-danger">Create Default Admin</button>
-                    </form>
-                    <form action="{{ url_for('reset_database') }}" method="post" style="margin-top: 10px;">
-                        <button type="submit" class="btn btn-warning" onclick="return confirm('Are you sure you want to reset the database? This will delete all data!');">Reset Database</button>
-                    </form>
-                    <form action="{{ url_for('insert_dummy_data_route') }}" method="post" style="margin-top: 10px;">
-                        <button type="submit" class="btn btn-info">Insert Dummy Data</button>
-                    </form>
+            <div class="card h-100 shadow">
+                <div class="card-body text-center">
+                    <i class="bi bi-journal-text text-primary" style="font-size:2rem;"></i>
+                    <h5 class="card-title mt-2">Stages</h5>
+                    <p class="display-6">{{ internship_count }}</p>
+                    <a href="/internship" class="btn btn-outline-primary">Voir les stages</a>
                 </div>
             </div>
         </div>
-
-        <!-- Car Management -->
+        {% endif %}
+        {% if session.get('role') in ['admin', 'teacher'] %}
         <div class="col">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">Car Management</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="{{ url_for('car_list') }}">List Cars</a></li>
-                        <li><a href="{{ url_for('add_car') }}">Add New Car</a></li>
-                    </ul>
+            <div class="card h-100 shadow">
+                <div class="card-body text-center">
+                    <i class="bi bi-person-badge text-success" style="font-size:2rem;"></i>
+                    <h5 class="card-title mt-2">Enseignants</h5>
+                    <p class="display-6">{{ teacher_count }}</p>
+                    <a href="/teacher" class="btn btn-outline-success">Voir les enseignants</a>
                 </div>
             </div>
         </div>
-
-        <!-- Department Management -->
+        {% endif %}
+        {% if session.get('role') in ['admin', 'teacher'] %}
         <div class="col">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">Department Management</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="{{ url_for('department_list') }}">List Departments</a></li>
-                        <li><a href="{{ url_for('add_department') }}">Add New Department</a></li>
-                    </ul>
+            <div class="card h-100 shadow">
+                <div class="card-body text-center">
+                    <i class="bi bi-building text-warning" style="font-size:2rem;"></i>
+                    <h5 class="card-title mt-2">Départements</h5>
+                    <p class="display-6">{{ department_count }}</p>
+                    <a href="/department" class="btn btn-outline-warning">Voir les départements</a>
                 </div>
             </div>
         </div>
-
-        <!-- Teacher Management -->
+        {% endif %}
+        {% if session.get('role') in ['admin', 'car'] %}
         <div class="col">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">Teacher Management</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="{{ url_for('teacher_list') }}">List Teachers</a></li>
-                        <li><a href="{{ url_for('add_teacher') }}">Add New Teacher</a></li>
-                    </ul>
+            <div class="card h-100 shadow">
+                <div class="card-body text-center">
+                    <i class="bi bi-truck text-info" style="font-size:2rem;"></i>
+                    <h5 class="card-title mt-2">Voitures</h5>
+                    <p class="display-6">{{ car_count }}</p>
+                    <a href="/car" class="btn btn-outline-info">Voir les voitures</a>
                 </div>
             </div>
         </div>
-
-        <!-- Internship Management -->
+        {% endif %}
+        {% if session.get('role') in ['admin', 'teacher'] %}
         <div class="col">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">Internship Management</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="{{ url_for('internship_list') }}">List Internships</a></li>
-                        <li><a href="{{ url_for('add_internship') }}">Add New Internship</a></li>
-                    </ul>
+            <div class="card h-100 shadow">
+                <div class="card-body text-center">
+                    <i class="bi bi-list-ul text-secondary" style="font-size:2rem;"></i>
+                    <h5 class="card-title mt-2">Types de stage</h5>
+                    <p class="display-6">{{ intern_type_count }}</p>
+                    <a href="/internship/types" class="btn btn-outline-secondary">Voir les types</a>
                 </div>
             </div>
         </div>
-
-        <!-- Internship Type Management -->
+        {% endif %}
+        {% if session.get('role') == 'admin' %}
         <div class="col">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">Internship Type Management</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="{{ url_for('list_internship_types') }}">List Internship Types</a></li>
-                        <li><a href="{{ url_for('add_internship_type') }}">Add New Internship Type</a></li>
-                    </ul>
+            <div class="card h-100 shadow">
+                <div class="card-body text-center">
+                    <i class="bi bi-people text-dark" style="font-size:2rem;"></i>
+                    <h5 class="card-title mt-2">Utilisateurs</h5>
+                    <p class="display-6">{{ user_count }}</p>
+                    <a href="/user" class="btn btn-outline-dark">Voir les utilisateurs</a>
                 </div>
             </div>
         </div>
-
-        <!-- User Management -->
-        <div class="col">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">User Management</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="{{ url_for('login_user') }}">Login</a></li>
-                        <li><a href="{{ url_for('logout_user') }}">Logout</a></li>
-                        <li><a href="{{ url_for('register_user') }}">Register</a></li>
-                        <li><a href="{{ url_for('list_users') }}">List Users</a></li>
-                        <li><a href="{{ url_for('edit_user', user_id=1) }}">Edit User (Example)</a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
+        {% endif %}
     </div>
 </div>
-{% endblock %}
+{% endblock %} 

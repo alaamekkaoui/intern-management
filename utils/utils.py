@@ -1,5 +1,6 @@
 from functools import wraps
-from flask import session, redirect, url_for, flash
+from flask import session, redirect, url_for, flash, request
+from utils.log_utils import log_activity
 
 def role_required(*roles):
     def decorator(f):

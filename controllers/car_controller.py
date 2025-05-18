@@ -2,6 +2,7 @@ from flask import render_template, request, redirect, flash
 from models.car import Car
 from models.internship import Internship
 from datetime import date, datetime
+from utils.log_utils import log_activity
 
 class CarController:
     # List all cars
@@ -62,6 +63,9 @@ class CarController:
 
         try:
             Car.add_car(name, model, car_type, brand, license_plate, average_cost_per_day, available_count)
+            cars = Car.get_all()
+            new_car = next((c for c in cars if c['license_plate'] == license_plate), None)
+            log_activity('add', 'car', new_car['id'] if new_car else None)
             flash('La voiture a été ajoutée avec succès!', 'success')
         except Exception as e:
             print(f"Error adding car: {e}")
@@ -71,6 +75,11 @@ class CarController:
 
     # Show details for a single car
     def show_car_details(self, car_id):
+        try:
+            car_id = int(car_id)
+        except (TypeError, ValueError):
+            flash("ID de voiture invalide.", "danger")
+            return redirect('/car')
         car = Car.get_by_id(car_id)
         internships = Internship.get_by_car_id(car_id)
         return render_template('car/details.html', car=car, internships=internships)
@@ -78,21 +87,36 @@ class CarController:
     # Delete a car
     def delete_car(self, car_id):
         try:
+            car_id = int(car_id)
+        except (TypeError, ValueError):
+            flash("ID de voiture invalide.", "danger")
+            return redirect('/car')
+        try:
             Car.delete_car(car_id)
+            log_activity('delete', 'car', car_id)
             flash('La voiture a été supprimée avec succès.', 'success')
         except Exception as e:
             print(f"Error deleting car: {e}")
             flash("Une erreur s'est produite lors de la suppression de la voiture.", 'danger')
-
         return redirect('/car')
 
     # Show edit form for a specific car
     def show_edit_car_form(self, car_id):
+        try:
+            car_id = int(car_id)
+        except (TypeError, ValueError):
+            flash("ID de voiture invalide.", "danger")
+            return redirect('/car')
         car = Car.get_by_id(car_id)
         return render_template('car/edit.html', car=car)
 
     # Handle editing a car's details
     def edit_car(self, car_id, request):
+        try:
+            car_id = int(car_id)
+        except (TypeError, ValueError):
+            flash("ID de voiture invalide.", "danger")
+            return redirect('/car')
         name = request.form['name']
         car_type = request.form['car_type']
         brand = request.form['brand']
@@ -102,6 +126,7 @@ class CarController:
 
         try:
             Car.update_car(car_id, name, car_type, brand, license_plate, average_cost_per_day, available_count)
+            log_activity('update', 'car', car_id)
             flash('La voiture a été mise à jour avec succès.', 'success')
             return redirect('/car')
         except Exception as e:

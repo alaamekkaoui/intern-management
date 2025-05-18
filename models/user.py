@@ -1,4 +1,4 @@
-from db import get_db_connection
+from config.db import get_db_connection
 from werkzeug.security import generate_password_hash, check_password_hash
 
 class User:
@@ -131,3 +131,12 @@ class User:
             cursor.close()
             conn.close()
             return False
+
+    @staticmethod
+    def delete_user(user_id):
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+        conn.commit()
+        cursor.close()
+        conn.close()

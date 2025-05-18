@@ -1,5 +1,5 @@
-from db import get_db_connection
-from config import Config
+from config.config import Config
+from config.db import get_db_connection
 from models.user import User
 from models.internship import Internship
 from models.car import Car

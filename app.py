@@ -21,6 +21,8 @@ app.secret_key = os.getenv('SECRET_KEY',)
 # Define the route for the index page (your home page)
 @app.route('/')
 def index():
+    if not session.get('user_id'):
+        return redirect(url_for('login_user'))
     role = session.get('role')
     counts = {}
     if role in ['admin', 'teacher', 'car']:
@@ -62,6 +64,10 @@ def debug():
         flash('Vous devez être connecté pour accéder au debug.', 'danger')
         return redirect(url_for('login_user'))
     return render_template('debug.html')
+
+@app.errorhandler(404)
+def not_found(e):
+    return render_template('404.html'), 404
 
 init_routes(app)
 

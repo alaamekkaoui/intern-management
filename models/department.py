@@ -1,5 +1,5 @@
 import traceback
-from db import get_db_connection
+from config.db import get_db_connection
 
 class Department:
     @staticmethod

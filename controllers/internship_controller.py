@@ -3,6 +3,7 @@ from models.internship import Internship
 from models.car import Car
 from models.teacher import Teacher
 from models.intern_type import InternType  # Import the InternshipType model
+from utils.log_utils import log_activity
 
 class InternshipController:
     # List all internships
@@ -51,13 +52,22 @@ class InternshipController:
         # Check car availability if a car is selected
         if car_id:
             if not Internship.is_car_available(car_id, start_date, end_date):
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return {'success': False, 'message': "Cette voiture est déjà réservée entre ces dates."}, 400
                 flash("Cette voiture est déjà réservée entre ces dates.", "danger")
-                return redirect('/internship/add')
+                return redirect('/internship')
 
         # Add internship
         if Internship.add_internship(teacher_id, intern_type_id, car_id, start_date, end_date):
+            internships = Internship.get_all()
+            new_internship = internships[-1] if internships else None
+            log_activity('add', 'internship', new_internship['id'] if new_internship else None)
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return {'success': True, 'internship': new_internship}, 200
             flash('Le stage a été ajouté avec succès!', 'success')  # Success message
         else:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return {'success': False, 'message': "Une erreur s'est produite lors de l'ajout du stage."}, 400
             flash("Une erreur s'est produite lors de l'ajout du stage.", 'danger')  # Error message
 
         return redirect('/internship')
@@ -69,6 +79,11 @@ class InternshipController:
     
     # Cancel an internship (update status to canceled)
     def cancel_internship(self, internship_id):
+        try:
+            internship_id = int(internship_id)
+        except (TypeError, ValueError):
+            flash("ID de stage invalide.", "danger")
+            return redirect('/internship')
         # Try to update the internship status to canceled
         if Internship.update_status(internship_id, 'canceled'):
             flash('Le stage a été annulé avec succès.', 'success')  # Success message
@@ -78,8 +93,14 @@ class InternshipController:
 
     # Delete an internship
     def delete_internship(self, internship_id):
+        try:
+            internship_id = int(internship_id)
+        except (TypeError, ValueError):
+            flash("ID de stage invalide.", "danger")
+            return redirect('/internship')
         # Try to delete the internship
         if Internship.delete_internship(internship_id):
+            log_activity('delete', 'internship', internship_id)
             flash('Le stage a été supprimé avec succès.', 'success')  # Success message
         else:
             flash("Une erreur s'est produite lors de la suppression du stage.", 'danger')  # Error message
@@ -88,6 +109,11 @@ class InternshipController:
 
     # Mark internship as done
     def mark_as_done(self, internship_id):
+        try:
+            internship_id = int(internship_id)
+        except (TypeError, ValueError):
+            flash("ID de stage invalide.", "danger")
+            return redirect('/internship')
         # Mark internship as done
         if Internship.update_status(internship_id, 'done'):
             flash('Le stage a été marqué comme terminé.', 'success')  # Success message
@@ -97,6 +123,11 @@ class InternshipController:
 
     # Show edit form for a specific internship
     def show_edit_internship_form(self, internship_id):
+        try:
+            internship_id = int(internship_id)
+        except (TypeError, ValueError):
+            flash("ID de stage invalide.", "danger")
+            return redirect('/internship')
         internship = Internship.get_by_id(internship_id)
         if internship is None:
             flash("Le stage demandé n'existe pas.", "danger")
@@ -108,6 +139,11 @@ class InternshipController:
 
     # Handle editing an internship's details
     def edit_internship(self, internship_id, request):
+        try:
+            internship_id = int(internship_id)
+        except (TypeError, ValueError):
+            flash("ID de stage invalide.", "danger")
+            return redirect('/internship')
         teacher_id = request.form['teacher_id']
         intern_type_id = request.form['intern_type_id']  # Get the intern_type_id (foreign key) for update
         start_date = request.form['start_date']
@@ -117,6 +153,7 @@ class InternshipController:
 
         # Update internship in the database
         if Internship.update_internship(internship_id, teacher_id, intern_type_id, car_id, start_date, end_date):
+            log_activity('update', 'internship', internship_id)
             flash('Internship updated successfully.', 'success')  # Success message
             return redirect('/internship')
         else:
@@ -144,6 +181,11 @@ class InternshipController:
 
     # Show details for a single internship
     def show_internship_details(self, internship_id):
+        try:
+            internship_id = int(internship_id)
+        except (TypeError, ValueError):
+            flash("ID de stage invalide.", "danger")
+            return redirect('/internship')
         internship = Internship.get_by_id(internship_id)
         if not internship:
             flash("Le stage demandé n'existe pas.", "danger")

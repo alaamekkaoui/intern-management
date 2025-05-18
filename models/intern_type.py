@@ -1,4 +1,4 @@
-from db import get_db_connection
+from config.db import get_db_connection
 
 class InternType:
     # Get all internship types

@@ -1,5 +1,7 @@
 from flask import render_template, request, redirect, session, flash
 from models.user import User
+from utils.log_utils import log_activity
+import os, json
 
 class UserController:
     # Show login form
@@ -16,6 +18,7 @@ class UserController:
             session['user_id'] = user['id']
             session['role'] = user['role']
             session['username'] = user['username']
+            log_activity('login', 'user', user['id'])
             flash('Bienvenue, vous êtes connecté.', 'success')  # Success message
             return redirect('/')
         else:
@@ -42,7 +45,7 @@ class UserController:
         try:
             User.add_user(username, password, role)
             flash('L\'utilisateur a été enregistré avec succès.', 'success')  # Success message
-            return redirect('/login')
+            return redirect('/user')
         except Exception as e:
             flash(f"Une erreur s'est produite lors de l'enregistrement de l'utilisateur: {e}", 'danger')  # Error message
             return redirect('/register')
@@ -56,15 +59,31 @@ class UserController:
             users = [u for u in users if username.lower() in u.get('username', '').lower()]
         if role:
             users = [u for u in users if u.get('role') == role]
-        return render_template('user/list.html', users=users, filter_username=username, filter_role=role)
+        # Load logs for admin view
+        logs = []
+        log_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'logs', 'logs.json')
+        if os.path.exists(log_path):
+            with open(log_path, 'r', encoding='utf-8') as f:
+                logs = json.load(f)
+        return render_template('user/list.html', users=users, filter_username=username, filter_role=role, logs=logs)
 
     # Show edit form for a specific user (admin only)
     def show_edit_user_form(self, user_id):
+        try:
+            user_id = int(user_id)
+        except (TypeError, ValueError):
+            flash("ID d'utilisateur invalide.", "danger")
+            return redirect('/user')
         user = User.get_by_id(user_id)
         return render_template('user/edit.html', user=user)
 
     # Handle editing a user's details (admin only)
     def edit_user(self, user_id, request):
+        try:
+            user_id = int(user_id)
+        except (TypeError, ValueError):
+            flash("ID d'utilisateur invalide.", "danger")
+            return redirect('/user')
         username = request.form['username']
         password = request.form['password']
         role = request.form['role']
@@ -93,4 +112,18 @@ class UserController:
             flash(message, 'success')
         else:
             flash(message, 'danger')
+        return redirect('/user')
+
+    # Delete a user (for modal)
+    def delete_user(self, user_id):
+        try:
+            user_id = int(user_id)
+        except (TypeError, ValueError):
+            flash("ID d'utilisateur invalide.", "danger")
+            return redirect('/user')
+        try:
+            User.delete_user(user_id)
+            flash("L'utilisateur a été supprimé avec succès.", "success")
+        except Exception as e:
+            flash(f"Une erreur s'est produite lors de la suppression de l'utilisateur: {str(e)}", 'danger')
         return redirect('/user')

@@ -157,7 +157,7 @@
                         <input type="checkbox" class="form-check-input car-needed-edit" id="car_needed_edit{{ internship.id }}" name="car_needed" {% if internship.car_id %}checked{% endif %} />
                         <label class="form-check-label" for="car_needed_edit{{ internship.id }}">Voiture nécessaire</label>
                     </div>
-                    <div class="form-group mb-2 car-type-div-edit" id="car_type_div_edit{{ internship.id }}" style="display:{{ 'block' if internship.car_id else 'none' }};">
+                    <div class="form-group mb-2 car-type-div-edit" id="car_type_div_edit{{ internship.id }}" style="display:{{ 'block' if internship.car_id else 'none' }}">
                         <label for="car_id{{ internship.id }}">Voiture</label>
                         <select class="form-control" id="car_id{{ internship.id }}" name="car_id">
                             {% for car in cars %}

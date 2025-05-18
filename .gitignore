@@ -122,3 +122,7 @@ Desktop.ini
 
 # Ignore log files
 *.log 
+*.json
+
+# New line for the new code block
+/logs/logs.json

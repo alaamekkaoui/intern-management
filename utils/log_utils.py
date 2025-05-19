@@ -5,10 +5,7 @@ from flask import session, request
 
 def log_activity(action, table, item_id=None):
     # Get real user IP, considering X-Forwarded-For if behind proxy
-    if request.headers.get('X-Forwarded-For'):
-        ip = request.headers.get('X-Forwarded-For').split(',')[0].strip()
-    else:
-        ip = request.remote_addr if request else 'unknown'
+    ip = request.remote_addr if request else 'unknown'
     log_entry = {
         'timestamp': datetime.now().isoformat(),
         'username': session.get('username', 'anonymous'),
@@ -21,7 +18,6 @@ def log_activity(action, table, item_id=None):
     logs_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'logs')
     log_path = os.path.join(logs_dir, 'logs.json')
     logs = []
-
     # Ensure the logs directory exists
     os.makedirs(logs_dir, exist_ok=True)
 
@@ -30,6 +26,7 @@ def log_activity(action, table, item_id=None):
         try:
             with open(log_path, 'r', encoding='utf-8') as f:
                 logs = json.load(f)
+                
         except Exception:
             logs = []
 

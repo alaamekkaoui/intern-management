@@ -4,7 +4,6 @@ from datetime import datetime
 from flask import session, request
 
 def log_activity(action, table, item_id=None):
-    # Get real user IP, considering X-Forwarded-For if behind proxy
     ip = request.remote_addr if request else 'unknown'
     log_entry = {
         'timestamp': datetime.now().isoformat(),

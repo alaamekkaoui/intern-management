@@ -19,51 +19,7 @@ def log_activity(action, table, item_id=None):
         'item_id': item_id
     }
     logs_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'logs')
-    log_path = os.path.join(logs_dir, 'logs.    import json
-    import os
-    import socket
-    from datetime import datetime
-    from flask import session, request
-    
-    def log_activity(action, table, item_id=None):
-        # Get client IP
-        if request.headers.get('X-Forwarded-For'):
-            client_ip = request.headers.get('X-Forwarded-For').split(',')[0].strip()
-        else:
-            client_ip = request.remote_addr if request else 'unknown'
-    
-        # Get server IP
-        try:
-            server_ip = socket.gethostbyname(socket.gethostname())
-        except Exception:
-            server_ip = 'unknown'
-    
-        log_entry = {
-            'timestamp': datetime.now().isoformat(),
-            'username': session.get('username', 'anonymous'),
-            'role': session.get('role', 'unknown'),
-            'client_ip': client_ip,
-            'server_ip': server_ip,
-            'action': action,
-            'table': table,
-            'item_id': item_id
-        }
-        logs_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'logs')
-        log_path = os.path.join(logs_dir, 'logs.json')
-        logs = []
-    
-        os.makedirs(logs_dir, exist_ok=True)
-    
-        if os.path.exists(log_path):
-            try:
-                with open(log_path, 'r', encoding='utf-8') as f:
-                    logs = json.load(f)
-            except Exception:
-                logs = []
-    
-        logs.append(log_entry)
-        with open(log_path, 'w', encoding='utf-8') as f:
-            json.dump(logs, f, ensure_ascii=False, indent=2)json')
+    log_path = os.path.join(logs_dir, 'logs.json')
     logs = []
 
     # Ensure the logs directory exists

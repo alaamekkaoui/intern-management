@@ -3,7 +3,7 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-{% if debug_mode and session.get('role') == 'admin' %}
+{% if debug_mode == True %}
     {% if success is not defined or not success %}
         <h2>Debug Access</h2>
         <form method="post">

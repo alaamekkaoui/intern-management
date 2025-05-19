@@ -16,8 +16,7 @@ load_dotenv()
 app = Flask(__name__)
 
 app.secret_key = os.getenv('SECRET_KEY',)
-debug_mode = os.getenv('DEBUG_MODE', '') 
-debug_code = os.getenv('DEBUG_CODE', '')
+
 
 # ------------------------------------------------------
 # Define the route for the index page (your home page)
@@ -63,20 +62,23 @@ def insert_dummy_data_route():
 
 @app.route('/debug', methods=['GET', 'POST'])
 def debug_route():
-        if  debug_mode == False:
-            return render_template('404.html'), 404
-
+    debug_mode = os.getenv('DEBUG_MODE') 
+    debug_code = os.getenv('DEBUG_CODE')
+    print("--------------------Debug mode:", debug_mode)
+    if debug_mode == 'False':
+        return render_template('404.html'), 404
+    if debug_mode == 'True':
         if request.method == 'POST':
-            code = request.form.get('code', '')
+            code = request.form.get('code')
             if code == debug_code:
                 return render_template('debug.html', success=True, debug_mode=True)
             else:
                 return render_template('debug.html', success=False, debug_mode=True)
-
         return render_template('debug.html', debug_mode=True)
+    return render_template('404.html'), 404
 # ------------------------------------------------------
 # Initialize the database and create tables
 init_routes(app)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0", debug=True)

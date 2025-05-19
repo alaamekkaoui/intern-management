@@ -196,4 +196,14 @@ class InternshipController:
         # Get intern type name
         intern_type = InternType.get_by_id(internship['intern_type_id']) if internship.get('intern_type_id') else None
         internship['intern_type_name'] = intern_type['name'] if intern_type else 'N/A'
+        # Add car details and car_needed for template
+        if internship.get('car_id'):
+            car = Car.get_by_id(internship['car_id'])
+            internship['car_model'] = car['model'] if car else None
+            internship['license_plate'] = car['license_plate'] if car else None
+            internship['car_needed'] = True
+        else:
+            internship['car_model'] = None
+            internship['license_plate'] = None
+            internship['car_needed'] = False
         return render_template('internship/details.html', internship=internship)

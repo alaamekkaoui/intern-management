@@ -36,9 +36,49 @@
             <a href="{{ url_for('internship_list') }}" class="btn btn-secondary btn-sm"><i class="bi bi-arrow-left"></i> Retour à la Liste des Stages</a>
         </div>
         <div class="collapse" id="editInternshipFormDetail">
-            {# Inline edit form can be added here if needed, similar to list page #}
-            <div class="alert alert-info">Pour modifier ce stage, utilisez la page de modification depuis la liste.</div>
-            <button type="button" class="btn btn-secondary ms-2 mt-2" data-bs-toggle="collapse" data-bs-target="#editInternshipFormDetail" onclick="document.getElementById('internshipDetailsStatic').style.display='block';"><i class="bi bi-x-circle"></i> Annuler</button>
+            <form action="/internship/edit/{{ internship.id }}" method="POST" class="border rounded p-3 bg-light">
+                <div class="form-group mb-2">
+                    <label for="teacher_id">Enseignant</label>
+                    <input type="text" class="form-control" id="teacher_id" name="teacher_id" value="{{ internship.teacher_name }}" readonly>
+                </div>
+                <div class="form-group mb-2">
+                    <label for="intern_type_id">Type de Stage</label>
+                    <input type="text" class="form-control" id="intern_type_id" name="intern_type_id" value="{{ internship.intern_type_name }}" readonly>
+                </div>
+                <div class="form-group form-check mb-2">
+                    <input type="checkbox" class="form-check-input" id="car_needed_edit" name="car_needed" {% if internship.car_needed %}checked{% endif %} />
+                    <label class="form-check-label" for="car_needed_edit">Voiture nécessaire</label>
+                </div>
+                <div class="form-group mb-2" id="car_type_div_edit" style="{% if not internship.car_needed %}display:none;{% endif %}">
+                    <label for="car_id">Voiture</label>
+                    <select class="form-control" id="car_id_edit" name="car_id">
+                        {% for car in cars %}
+                            <option value="{{ car.id }}" {% if internship.car_model == car.model and internship.license_plate == car.license_plate %}selected{% endif %}>{{ car.model }} - {{ car.brand }} - {{ car.license_plate }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group mb-2">
+                    <label for="start_date">Date de début</label>
+                    <input type="date" class="form-control" id="start_date" name="start_date" value="{{ internship.start_date }}" required>
+                </div>
+                <div class="form-group mb-2">
+                    <label for="end_date">Date de fin</label>
+                    <input type="date" class="form-control" id="end_date" name="end_date" value="{{ internship.end_date }}" required>
+                </div>
+                <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> Enregistrer</button>
+                <button type="button" class="btn btn-secondary ms-2 mt-2" data-bs-toggle="collapse" data-bs-target="#editInternshipFormDetail" onclick="document.getElementById('internshipDetailsStatic').style.display='block';"><i class="bi bi-x-circle"></i> Annuler</button>
+            </form>
         </div>
     </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var carNeededCheckbox = document.getElementById('car_needed_edit');
+        var carTypeDiv = document.getElementById('car_type_div_edit');
+        if(carNeededCheckbox && carTypeDiv) {
+            carNeededCheckbox.addEventListener('change', function() {
+                carTypeDiv.style.display = this.checked ? 'block' : 'none';
+            });
+        }
+    });
+    </script>
 {% endblock %}

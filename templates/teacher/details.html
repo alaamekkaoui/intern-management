@@ -13,7 +13,7 @@
     </ul>
     <div class="d-flex flex-wrap gap-2 mb-3">
         {% if session.get('role') in ['admin', 'teacher'] %}
-            <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#editTeacherFormDetail" aria-expanded="false" aria-controls="editTeacherFormDetail" onclick="document.getElementById('teacherDetailsStatic').style.display='none';"><i class="bi bi-pencil"></i></button>
+            <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#editTeacherFormDetail" aria-expanded="false" aria-controls="editTeacherFormDetail" onclick="document.getElementById('teacherDetailsStatic').style.display='none';"><i class="bi bi-pencil"></i> Modifier</button>
             {% if session.get('role') == 'admin' %}
                 <form action="{{ url_for('delete_teacher', teacher_id=teacher.id) }}" method="POST" style="display:inline;">
                     <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet enseignant ?');">
@@ -56,6 +56,7 @@
     </div>
     {% if internships and internships|length > 0 %}
     <h4>Stages de cet enseignant</h4>
+    <div class="table-responsive">
     <table class="table table-bordered">
         <thead>
             <tr>
@@ -78,8 +79,17 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
     {% else %}
     <p>Aucun stage pour cet enseignant.</p>
     {% endif %}
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var tables = document.querySelectorAll('table');
+    tables.forEach(function(table) {
+        table.classList.add('table-responsive');
+    });
+});
+</script>
 {% endblock %}

@@ -15,10 +15,10 @@
     </ul>
     <div class="d-flex flex-wrap gap-2 mb-3">
         {% if session.get('role') in ['admin', 'car'] %}
-            <a href="/car/edit/{{ car.id }}" class="btn btn-primary">Modifier</a>
+            <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#editCarFormDetail" aria-expanded="false" aria-controls="editCarFormDetail" onclick="document.getElementById('carDetailsStatic').style.display='none';"><i class="bi bi-pencil"></i> Modifier</button>
             {% if session.get('role') == 'admin' %}
                 <form action="/car/delete/{{ car.id }}" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette voiture ?');">Supprimer</button>
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette voiture ?');">Supprimer</button>
                 </form>
             {% endif %}
         {% endif %}
@@ -82,4 +82,13 @@
     <p>Aucun stage n'utilise cette voiture.</p>
     {% endif %}
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Mobile support: make table responsive
+    var tables = document.querySelectorAll('table');
+    tables.forEach(function(table) {
+        table.classList.add('table-responsive');
+    });
+});
+</script>
 {% endblock %}

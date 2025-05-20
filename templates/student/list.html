@@ -46,10 +46,12 @@
             <td>{{ student.phone }}</td>
             <td>{{ student.intern_type_name if student.intern_type_name else '' }}</td>
             <td>
-                <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#editStudentForm{{ student.id }}" aria-expanded="false" aria-controls="editStudentForm{{ student.id }}"><i class="bi bi-pencil"></i> Modifier</button>
+                <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#editStudentForm{{ student.id }}" aria-expanded="false" aria-controls="editStudentForm{{ student.id }}" {% if session.get('role') == 'car' %}style="display:none;"{% endif %} title="Modifier"><i class="bi bi-pencil"></i></button>
+                {% if session.get('role') == 'admin' %}
                 <form action="/student/delete/{{ student.id }}" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Supprimer cet étudiant ?');"><i class="bi bi-trash"></i> Supprimer</button>
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Supprimer cet étudiant ?');" title="Supprimer"><i class="bi bi-trash"></i></button>
                 </form>
+                {% endif %}
             </td>
         </tr>
         <tr class="collapse" id="editStudentForm{{ student.id }}">

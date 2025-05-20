@@ -470,10 +470,12 @@ def init_routes(app):
 
     # =============================== Student Routes ===============================
     @app.route('/student')
+    @role_required('admin', 'teacher', 'car')
     def student_list():
         return student_controller.list_students()
 
     @app.route('/student/add', methods=['GET', 'POST'])
+    @role_required('admin', 'teacher')
     def add_student():
         internship_id = request.args.get('internship_id')
         if request.method == 'POST':
@@ -483,124 +485,6 @@ def init_routes(app):
             return redirect('/student')
         return student_controller.show_add_student_form(internship_id=internship_id)
 
-    @app.route('/internship/<int:internship_id>/add_student', methods=['GET', 'POST'])
-    def add_student_to_internship(internship_id):
-        from controllers.student_controller import StudentController
-        student_controller = StudentController()
-        if request.method == 'POST':
-            return student_controller.add_student_to_internship(internship_id, request)
-        # Optionally, show a form if GET is needed
-        return redirect(f'/internship/details/{internship_id}')
-
-    @app.route('/internship/choose_and_add_student', methods=['GET', 'POST'])
-    def choose_internship_and_add_student():
-        if request.method == 'POST':
-            internship_id = request.form['internship_id']
-            return redirect(f'/internship/{internship_id}/add_student')
-        internships = Internship.get_all()
-        return render_template('student/choose_internship.html', internships=internships)
-
-    @app.route('/student/import/xlsx', methods=['POST'])
-    def import_students_xlsx():
-        from controllers.student_controller import StudentController
-        import openpyxl
-        student_controller = StudentController()
-        file = request.files['file']
-        internship_id = request.form.get('internship_id')
-        wb = openpyxl.load_workbook(file)
-        ws = wb.active
-        rows = []
-        for i, row in enumerate(ws.iter_rows(values_only=True)):
-            if i == 0:
-                continue  # skip header
-            first_name, last_name, email, phone = row[:4]
-            rows.append({'first_name': first_name, 'last_name': last_name, 'email': email, 'phone': phone})
-        student_controller.import_students_xlsx(rows, internship_id=internship_id)
-        return redirect(f'/internship/details/{internship_id}')
-
-    @app.route('/student/sample/xlsx')
-    def sample_student_xlsx():
-        import io
-        import openpyxl
-        wb = openpyxl.Workbook()
-        ws = wb.active
-        ws.append(['first_name', 'last_name', 'email', 'phone'])
-        ws.append(['John', 'Doe', 'john@example.com', '123456789'])
-        ws.append(['Jane', 'Smith', '', ''])
-        output = io.BytesIO()
-        wb.save(output)
-        output.seek(0)
-        from flask import send_file
-        return send_file(output, as_attachment=True, download_name='students_sample.xlsx', mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-
-    @app.route('/student/export/pdf')
-    def export_students_pdf():
-        from models.student import Student
-        from utils.pdf_utils import generate_students_pdf
-        students = Student.get_all()
-        pdf_bytes = generate_students_pdf(students)
-        from flask import send_file
-        import io
-        return send_file(io.BytesIO(pdf_bytes), as_attachment=True, download_name='students.pdf', mimetype='application/pdf')
-
-    @app.route('/student/export/xlsx')
-    def export_students_xlsx():
-        from models.student import Student
-        import openpyxl
-        from flask import send_file
-        import io
-        students = Student.get_all()
-        wb = openpyxl.Workbook()
-        ws = wb.active
-        ws.append(['first_name', 'last_name', 'email', 'phone', 'internship', 'intern_type', 'teacher'])
-        for s in students:
-            ws.append([
-                s['first_name'],
-                s['last_name'],
-                s['email'],
-                s['phone'],
-                f"{s['internship_start']} - {s['internship_end']}" if s['internship_start'] else '',
-                s['intern_type_name'] or '',
-                f"{s['teacher_first_name']} {s['teacher_last_name']}" if s['teacher_first_name'] else ''
-            ])
-        output = io.BytesIO()
-        wb.save(output)
-        output.seek(0)
-        return send_file(output, as_attachment=True, download_name='students.xlsx', mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-
-    @app.route('/internship/<int:internship_id>/students/export/pdf')
-    def export_students_of_internship_pdf(internship_id):
-        from models.student import Student
-        from utils.pdf_utils import generate_students_pdf
-        students = [s for s in Student.get_all() if s.get('internship_id') == internship_id]
-        pdf_bytes = generate_students_pdf(students)
-        from flask import send_file
-        import io
-        return send_file(io.BytesIO(pdf_bytes), as_attachment=True, download_name=f'students_internship_{internship_id}.pdf', mimetype='application/pdf')
-
-    @app.route('/internship/<int:internship_id>/students/export/xlsx')
-    def export_students_of_internship_xlsx(internship_id):
-        from models.student import Student
-        from openpyxl import Workbook
-        from flask import send_file
-        import io
-        students = [s for s in Student.get_all() if s.get('internship_id') == internship_id]
-        wb = Workbook()
-        ws = wb.active
-        ws.title = "Students"
-        ws.append(["First Name", "Last Name", "Email", "Phone"])
-        for s in students:
-            ws.append([
-                s.get('first_name', ''),
-                s.get('last_name', ''),
-                s.get('email', ''),
-                s.get('phone', '')
-            ])
-        xlsx_io = io.BytesIO()
-        wb.save(xlsx_io)
-        xlsx_io.seek(0)
-        return send_file(xlsx_io, as_attachment=True, download_name=f'students_internship_{internship_id}.xlsx', mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-
     @app.route('/student/edit/<int:student_id>', methods=['GET', 'POST'])
     @role_required('admin', 'teacher')
     def edit_student(student_id):
@@ -608,7 +492,7 @@ def init_routes(app):
         return StudentController().edit_student(student_id)
 
     @app.route('/student/delete/<int:student_id>', methods=['POST'])
-    @role_required('admin', 'teacher')
+    @role_required('admin')
     def delete_student(student_id):
         from controllers.student_controller import StudentController
         return StudentController().delete_student(student_id)

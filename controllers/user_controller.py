@@ -12,6 +12,7 @@ class UserController:
     def login(self, request):
         username = request.form['username']
         password = request.form['password']
+        print(f"[LOGIN] User '{username}' attempted login at {__import__('datetime').datetime.now()}")
         user = User.authenticate(username, password)
 
         if user:
@@ -103,6 +104,7 @@ class UserController:
             return redirect('/login')
         username = request.form['username']
         role = request.form['role']
+        print(f"[PROFILE UPDATE] User '{username}' (ID: {user_id}) updated profile at {__import__('datetime').datetime.now()}")
         old_password = request.form.get('old_password')
         new_password = request.form.get('new_password')
         success, message = User.update_profile(user_id, username, role, old_password, new_password)

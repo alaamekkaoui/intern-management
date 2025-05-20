@@ -38,7 +38,7 @@ def index():
         counts['car_count'] = len(Car.get_all())
     if role == 'admin':
         counts['user_count'] = len(User.get_all_users())
-    if role in ['admin', 'teacher']:
+    if role in ['admin', 'teacher', 'car']:
         from models.student import Student
         counts['student_count'] = len(Student.get_all())
     return render_template('index.html', **counts)  

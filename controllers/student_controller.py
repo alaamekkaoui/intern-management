@@ -58,6 +58,7 @@ class StudentController:
         email = request.form.get('email')
         phone = request.form.get('phone')
         internship_id = request.form.get('internship_id')
+        print(f"[STUDENT ADD] User '{session.get('username')}' added student '{first_name} {last_name}' at {__import__('datetime').datetime.now()}")
         student_id = Student.add_student(first_name, last_name, email, phone)
         if internship_id:
             Student.assign_internship(student_id, internship_id)
@@ -108,6 +109,7 @@ class StudentController:
             email = request.form.get('email', '')
             phone = request.form.get('phone', '')
             internship_id = request.form.get('internship_id')
+            print(f"[STUDENT EDIT] User '{session.get('username')}' edited student ID {student_id} at {__import__('datetime').datetime.now()}")
             Student.update_student(student_id, first_name, last_name, email, phone, internship_id)
             flash('Étudiant modifié avec succès.', 'success')
             return redirect(url_for('student_list'))
@@ -124,6 +126,7 @@ class StudentController:
         if not student:
             flash('Étudiant introuvable.', 'danger')
             return redirect(url_for('student_list'))
+        print(f"[STUDENT DELETE] User '{session.get('username')}' deleted student ID {student_id} at {__import__('datetime').datetime.now()}")
         Student.delete_student(student_id)
         flash('Étudiant supprimé avec succès.', 'success')
         return redirect(url_for('student_list'))

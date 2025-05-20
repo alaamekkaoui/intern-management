@@ -7,7 +7,8 @@ class Student:
         cursor = conn.cursor(dictionary=True)
         cursor.execute("""
             SELECT students.*, 
-                   internships.start_date AS internship_start, internships.end_date AS internship_end, 
+                   internships.start_date AS internship_start, internships.end_date AS internship_end,                   
+                       intern_types.id AS intern_type_id, 
                    intern_types.name AS intern_type_name, 
                    teachers.first_name AS teacher_first_name, teachers.last_name AS teacher_last_name
             FROM students

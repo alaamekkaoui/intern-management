@@ -312,4 +312,32 @@ def export_internship_types_xlsx(internship_types):
     xlsx_io = io.BytesIO()
     wb.save(xlsx_io)
     xlsx_io.seek(0)
-    return xlsx_io 
+    return xlsx_io
+
+def generate_students_pdf(students):
+    pdf = FPDF()
+    pdf.add_page()
+    add_iav_logo(pdf)
+    pdf.ln(10)
+    pdf.set_font('Arial', 'B', 16)
+    pdf.cell(0, 10, 'Students List', ln=True, align='C')
+    pdf.ln(10)
+    pdf.set_font('Arial', 'B', 12)
+    pdf.cell(40, 10, 'First Name', 1)
+    pdf.cell(40, 10, 'Last Name', 1)
+    pdf.cell(60, 10, 'Email', 1)
+    pdf.cell(30, 10, 'Phone', 1)
+    pdf.cell(0, 10, 'Internship', 1, ln=True)
+    pdf.set_font('Arial', '', 12)
+    for s in students:
+        pdf.cell(40, 10, str(s.get('first_name', '')), 1)
+        pdf.cell(40, 10, str(s.get('last_name', '')), 1)
+        pdf.cell(60, 10, str(s.get('email', '')), 1)
+        pdf.cell(30, 10, str(s.get('phone', '')), 1)
+        internship = s.get('internship_title', '') if s.get('internship_title') else ''
+        pdf.cell(0, 10, internship, 1, ln=True)
+    pdf_output = io.BytesIO()
+    pdf_bytes = pdf.output(dest='S').encode('latin1')
+    pdf_output.write(pdf_bytes)
+    pdf_output.seek(0)
+    return pdf_output

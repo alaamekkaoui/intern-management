@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Ajouter un Étudiant{% endblock %}
+{% block content %}
+<h2>Ajouter un Étudiant</h2>
+<form method="POST">
+    <div class="mb-3">
+        <label for="first_name">Prénom</label>
+        <input type="text" class="form-control" id="first_name" name="first_name" required>
+    </div>
+    <div class="mb-3">
+        <label for="last_name">Nom</label>
+        <input type="text" class="form-control" id="last_name" name="last_name" required>
+    </div>
+    <div class="mb-3">
+        <label for="email">Email</label>
+        <input type="email" class="form-control" id="email" name="email">
+    </div>
+    <div class="mb-3">
+        <label for="phone">Téléphone</label>
+        <input type="text" class="form-control" id="phone" name="phone">
+    </div>
+    <div class="mb-3">
+        <label for="internship_id">Stage (enseignant & type)</label>
+        <select class="form-control" id="internship_id" name="internship_id">
+            <option value="">Aucun</option>
+            {% for internship in internships %}
+                <option value="{{ internship.id }}" {% if internship_id and internship_id == internship.id %}selected{% endif %}>
+                    {{ internship.start_date }} - {{ internship.end_date }} | {{ internship.intern_type or 'N/A' }} | {{ internship.first_name }} {{ internship.last_name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-success">Ajouter</button>
+    <a href="/student" class="btn btn-secondary ms-2">Annuler</a>
+</form>
+{% endblock %}

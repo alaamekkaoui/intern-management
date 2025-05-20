@@ -17,6 +17,8 @@ app = Flask(__name__)
 
 app.secret_key = os.getenv('SECRET_KEY',)
 
+# Initialize the database and create tables and register all routes from routes.py
+init_routes(app)
 
 # ------------------------------------------------------
 # Define the route for the index page (your home page)
@@ -36,6 +38,9 @@ def index():
         counts['car_count'] = len(Car.get_all())
     if role == 'admin':
         counts['user_count'] = len(User.get_all_users())
+    if role in ['admin', 'teacher']:
+        from models.student import Student
+        counts['student_count'] = len(Student.get_all())
     return render_template('index.html', **counts)  
 # ------------------------------------------------------
 # Route to create the default admin if it doesn't exist
@@ -77,8 +82,6 @@ def debug_route():
         return render_template('debug.html', debug_mode=True)
     return render_template('404.html'), 404
 # ------------------------------------------------------
-# Initialize the database and create tables
-init_routes(app)
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", debug=True)

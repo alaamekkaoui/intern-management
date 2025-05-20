@@ -113,7 +113,11 @@
             <td>{{ internship.start_date }}</td>
             <td>{{ internship.end_date }}</td>
             <td>
-                <a href="/internship/details/{{ internship.id }}" class="btn btn-info btn-sm"><i class="bi bi-info-circle"></i></a>
+                <a href="/internship/details/{{ internship.id }}" class="btn btn-info btn-sm mb-1"><i class="bi bi-info-circle"></i> Détail</a>
+                <div class="btn-group mb-1" role="group">
+                    <a href="/internship/{{ internship.id }}/students/export/pdf" class="btn btn-outline-danger btn-sm" title="Exporter étudiants PDF"><i class="bi bi-file-earmark-pdf"></i> Étudiants PDF</a>
+                    <a href="/internship/{{ internship.id }}/students/export/xlsx" class="btn btn-outline-success btn-sm" title="Exporter étudiants XLSX"><i class="bi bi-file-earmark-excel"></i> Étudiants XLSX</a>
+                </div>
                 {% if session.get('role') in ['admin', 'teacher'] and internship.status == 'pending' %}
                     <form action="/internship/mark_done/{{ internship.id }}" method="POST" style="display:inline;">
                         <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-check-circle"></i></button>
@@ -134,6 +138,31 @@
                 {% endif %}
             </td>
         </tr>
+        <!-- Modal for XLSX import for this internship -->
+        <div class="modal fade" id="importStudentModal{{ internship.id }}" tabindex="-1" aria-labelledby="importStudentModalLabel{{ internship.id }}" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <form method="post" action="/student/import/xlsx" enctype="multipart/form-data">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="importStudentModalLabel{{ internship.id }}">Importer étudiants (XLSX) pour ce stage</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <input type="hidden" name="internship_id" value="{{ internship.id }}">
+                  <div class="mb-3">
+                    <label for="file{{ internship.id }}" class="form-label">Fichier XLSX</label>
+                    <input type="file" class="form-control" id="file{{ internship.id }}" name="file" accept=".xlsx" required>
+                  </div>
+                  <a href="/student/sample/xlsx" class="btn btn-link">Télécharger un modèle XLSX</a>
+                </div>
+                <div class="modal-footer">
+                  <button type="submit" class="btn btn-primary">Importer</button>
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
         <tr class="collapse" id="editInternshipForm{{ internship.id }}">
             <td colspan="7">
                 <form action="/internship/edit/{{ internship.id }}" method="POST" class="border rounded p-3 bg-light">

@@ -3,6 +3,7 @@ from config.db import get_db_connection
 from models.user import User
 from models.internship import Internship
 from models.car import Car
+from models.student import Student  # Importing Student model
 from datetime import date
 
 def create_all_tables():
@@ -89,6 +90,20 @@ def create_all_tables():
             FOREIGN KEY (teacher_id) REFERENCES teachers(id) ON DELETE SET NULL,
             FOREIGN KEY (car_id) REFERENCES cars(id) ON DELETE SET NULL,
             FOREIGN KEY (intern_type_id) REFERENCES intern_types(id) ON DELETE SET NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+        """)
+
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS students (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            first_name VARCHAR(100) NOT NULL,
+            last_name VARCHAR(100) NOT NULL,
+            email VARCHAR(100),
+            phone VARCHAR(15),
+            internship_id INT,
+            teacher_id INT,
+            FOREIGN KEY (internship_id) REFERENCES internships(id) ON DELETE SET NULL,
+            FOREIGN KEY (teacher_id) REFERENCES teachers(id) ON DELETE SET NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
         """)
 

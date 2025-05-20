@@ -206,4 +206,7 @@ class InternshipController:
             internship['car_model'] = None
             internship['license_plate'] = None
             internship['car_needed'] = False
-        return render_template('internship/details.html', internship=internship)
+        # Add student list for this internship
+        from models.student import Student
+        students = [s for s in Student.get_all() if s.get('internship_id') == internship_id]
+        return render_template('internship/details.html', internship=internship, cars=Car.get_all(), students=students)

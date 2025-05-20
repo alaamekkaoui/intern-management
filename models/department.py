@@ -21,7 +21,7 @@ class Department:
             cursor.execute("SELECT * FROM departments WHERE name = %s", (department_name,))
             existing_department = cursor.fetchone()
             if existing_department:
-                return False  # Department already exists
+                return False  
             
             # Proceed to add the department
             cursor.execute("INSERT INTO departments (name) VALUES (%s)", (department_name,))

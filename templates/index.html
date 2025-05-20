@@ -89,6 +89,18 @@
             </div>
         </div>
         {% endif %}
+        {% if student_count is defined %}
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 rounded-4">
+                <div class="card-body text-center">
+                    <i class="bi bi-person text-info" style="font-size:2.5rem;"></i>
+                    <h5 class="card-title mt-3">Étudiants</h5>
+                    <p class="display-6 fw-semibold">{{ student_count }}</p>
+                    <a href="/student" class="btn btn-outline-info rounded-pill">Voir les étudiants</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
-{% endblock %} 
+{% endblock %}

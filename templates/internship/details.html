@@ -34,7 +34,65 @@
                 {% endif %}
             {% endif %}
             <a href="{{ url_for('internship_list') }}" class="btn btn-secondary btn-sm"><i class="bi bi-arrow-left"></i> Retour à la Liste des Stages</a>
+            <a href="/internship/export/pdf" class="btn btn-outline-danger btn-sm"><i class="bi bi-file-earmark-pdf"></i> Exporter PDF</a>
+            <a href="/internship/export/xlsx" class="btn btn-outline-success btn-sm"><i class="bi bi-file-earmark-excel"></i> Exporter XLSX</a>
         </div>
+        {% if session.get('role') in ['admin', 'teacher'] %}
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <button class="btn btn-success btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#addStudentFormCollapse" aria-expanded="false" aria-controls="addStudentFormCollapse"><i class="bi bi-person-plus"></i> Ajouter un étudiant</button>
+            <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#importStudentModal"><i class="bi bi-upload"></i> Importer étudiants (XLSX)</button>
+        </div>
+        <div class="collapse" id="addStudentFormCollapse">
+          <div class="card mb-4">
+            <div class="card-body">
+              <form method="POST" action="/internship/{{ internship.id }}/add_student">
+                <div class="mb-3">
+                  <label for="first_name">Prénom</label>
+                  <input type="text" class="form-control" id="first_name" name="first_name" required>
+                </div>
+                <div class="mb-3">
+                  <label for="last_name">Nom</label>
+                  <input type="text" class="form-control" id="last_name" name="last_name" required>
+                </div>
+                <div class="mb-3">
+                  <label for="email">Email</label>
+                  <input type="email" class="form-control" id="email" name="email">
+                </div>
+                <div class="mb-3">
+                  <label for="phone">Téléphone</label>
+                  <input type="text" class="form-control" id="phone" name="phone">
+                </div>
+                <button type="submit" class="btn btn-success">Ajouter</button>
+              </form>
+            </div>
+          </div>
+        </div>
+        <!-- Modal for XLSX import for this internship -->
+        <div class="modal fade" id="importStudentModal" tabindex="-1" aria-labelledby="importStudentModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <form method="post" action="/student/import/xlsx" enctype="multipart/form-data">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="importStudentModalLabel">Importer étudiants (XLSX) pour ce stage</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <input type="hidden" name="internship_id" value="{{ internship.id }}">
+                  <div class="mb-3">
+                    <label for="file" class="form-label">Fichier XLSX</label>
+                    <input type="file" class="form-control" id="file" name="file" accept=".xlsx" required>
+                  </div>
+                  <a href="/student/sample/xlsx" class="btn btn-link">Télécharger un modèle XLSX</a>
+                </div>
+                <div class="modal-footer">
+                  <button type="submit" class="btn btn-primary">Importer</button>
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        {% endif %}
         <div class="collapse" id="editInternshipFormDetail">
             <form action="/internship/edit/{{ internship.id }}" method="POST" class="border rounded p-3 bg-light">
                 <div class="form-group mb-2">
@@ -69,6 +127,40 @@
                 <button type="button" class="btn btn-secondary ms-2 mt-2" data-bs-toggle="collapse" data-bs-target="#editInternshipFormDetail" onclick="document.getElementById('internshipDetailsStatic').style.display='block';"><i class="bi bi-x-circle"></i> Annuler</button>
             </form>
         </div>
+        {% if students %}
+        <div class="mb-3 d-flex align-items-center gap-2">
+            <button class="btn btn-outline-info btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#studentsInInternship" aria-expanded="false" aria-controls="studentsInInternship">
+                Afficher la liste des étudiants affectés à ce stage ({{ students|length }})
+            </button>
+            <a href="/internship/{{ internship.id }}/students/export/pdf" class="btn btn-outline-danger btn-sm">
+                <i class="bi bi-file-earmark-pdf"></i> Exporter PDF
+            </a>
+        </div>
+        <div class="collapse mt-2" id="studentsInInternship">
+            <div class="card card-body">
+                <table class="table table-bordered table-sm">
+                    <thead>
+                        <tr>
+                            <th>Prénom</th>
+                            <th>Nom</th>
+                            <th>Email</th>
+                            <th>Téléphone</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td>{{ student.first_name }}</td>
+                            <td>{{ student.last_name }}</td>
+                            <td>{{ student.email or '' }}</td>
+                            <td>{{ student.phone or '' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
     </div>
     <script>
     document.addEventListener('DOMContentLoaded', function() {

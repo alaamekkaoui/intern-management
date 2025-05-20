@@ -197,11 +197,29 @@ class InternshipController:
         intern_type = InternType.get_by_id(internship['intern_type_id']) if internship.get('intern_type_id') else None
         internship['intern_type_name'] = intern_type['name'] if intern_type else 'N/A'
         # Add car details and car_needed for template
+        car_cost_info = None
         if internship.get('car_id'):
             car = Car.get_by_id(internship['car_id'])
             internship['car_model'] = car['model'] if car else None
             internship['license_plate'] = car['license_plate'] if car else None
             internship['car_needed'] = True
+            if car and car.get('average_cost_per_day'):
+                from datetime import datetime, timedelta
+                try:
+                    start_date = datetime.strptime(str(internship['start_date']), '%Y-%m-%d')
+                    end_date = datetime.strptime(str(internship['end_date']), '%Y-%m-%d')
+                    num_days = (end_date - start_date).days + 1
+                    cost_per_day = float(car['average_cost_per_day'])
+                    total_cost = num_days * cost_per_day
+                    car_cost_info = {
+                        'cost_per_day': cost_per_day,
+                        'num_days': num_days,
+                        'total_cost': total_cost,
+                        'start_date': start_date.strftime('%Y-%m-%d'),
+                        'end_date': end_date.strftime('%Y-%m-%d')
+                    }
+                except Exception as e:
+                    car_cost_info = None
         else:
             internship['car_model'] = None
             internship['license_plate'] = None
@@ -209,4 +227,4 @@ class InternshipController:
         # Add student list for this internship
         from models.student import Student
         students = [s for s in Student.get_all() if s.get('internship_id') == internship_id]
-        return render_template('internship/details.html', internship=internship, cars=Car.get_all(), students=students)
+        return render_template('internship/details.html', internship=internship, cars=Car.get_all(), students=students, car_cost_info=car_cost_info)

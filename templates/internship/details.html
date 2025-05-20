@@ -13,6 +13,14 @@
             <li class="list-group-item"><strong>Date de début :</strong> {{ internship.start_date }}</li>
             <li class="list-group-item"><strong>Date de fin :</strong> {{ internship.end_date }}</li>
             <li class="list-group-item"><strong>Status :</strong> {% if internship.status == 'pending' %}En attente{% elif internship.status == 'canceled' %}Annulé{% elif internship.status == 'done' %}Terminé{% else %}Inconnu{% endif %}</li>
+            {% if internship.car_needed and car_cost_info %}
+            <li class="list-group-item bg-light">
+                <strong>Coût voiture :</strong><br>
+                - Coût par jour : <strong>{{ car_cost_info.cost_per_day }} MAD</strong><br>
+                - Nombre de jours de réservation : <strong>{{ car_cost_info.num_days }}</strong> (du {{ car_cost_info.start_date }} au {{ car_cost_info.end_date }})<br>
+                - <span class="text-success">Coût total : <strong>{{ car_cost_info.total_cost }} MAD</strong></span>
+            </li>
+            {% endif %}
         </ul>
         <div class="d-flex flex-wrap gap-2 mb-3">
             {% if session.get('role') in ['admin', 'teacher'] %}

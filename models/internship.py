@@ -69,26 +69,101 @@ class Internship:
         try:
             conn = get_db_connection()
             cursor = conn.cursor()
+            # First verify if teacher exists - could be ID or full name
+            if teacher_id:
+                try:
+                    # Try to use it as an ID first
+                    teacher_id = int(teacher_id)
+                    cursor.execute("SELECT id FROM teachers WHERE id = %s", (teacher_id,))
+                    cursor.fetchone()  # Always fetch result to clear buffer
+                except (ValueError, TypeError):
+                    # If not a valid ID, try to find by full name
+                    if isinstance(teacher_id, str):
+                        names = teacher_id.split()
+                        if len(names) >= 2:
+                            first_name = names[0]
+                            last_name = ' '.join(names[1:])
+                            cursor.execute("""
+                                SELECT id FROM teachers 
+                                WHERE first_name = %s AND last_name = %s
+                            """, (first_name, last_name))
+                            result = cursor.fetchone()
+                            if result:
+                                teacher_id = result[0]
+                            else:
+                                print(f"Teacher {teacher_id} not found")
+                                return False
+                        else:
+                            print(f"Invalid teacher name format: {teacher_id}")
+                            return False
+                    else:
+                        print(f"Invalid teacher ID/name format: {teacher_id}")
+                        return False
+
+            # Verify if intern_type_id exists
+            if intern_type_id:
+                try:
+                    intern_type_id = int(intern_type_id)
+                    cursor.execute("SELECT id FROM intern_types WHERE id = %s", (intern_type_id,))
+                    cursor.fetchone()  # Always fetch result to clear buffer
+                    if not cursor.rowcount:
+                        print(f"Intern type ID {intern_type_id} does not exist")
+                        return False
+                except (ValueError, TypeError):
+                    print(f"Invalid intern type ID format: {intern_type_id}")
+                    return False
+
+            # Verify if car_id exists
+            if car_id:
+                try:
+                    car_id = int(car_id)
+                    cursor.execute("SELECT id FROM cars WHERE id = %s", (car_id,))
+                    cursor.fetchone()  # Always fetch result to clear buffer
+                    if not cursor.rowcount:
+                        print(f"Car ID {car_id} does not exist")
+                        return False
+                except (ValueError, TypeError):
+                    print(f"Invalid car ID format: {car_id}")
+                    return False
+
+            # Update the internship with NULL handling
             cursor.execute("""
                 UPDATE internships
-                SET teacher_id = %s, intern_type_id = %s, car_id = %s, start_date = %s, end_date = %s
+                SET teacher_id = %s,
+                    intern_type_id = %s,
+                    car_id = %s,
+                    start_date = %s,
+                    end_date = %s
                 WHERE id = %s
-            """, (teacher_id, intern_type_id, car_id, start_date, end_date, internship_id))
+            """, (
+                teacher_id if teacher_id else None,
+                intern_type_id if intern_type_id else None,
+                car_id if car_id else None,
+                start_date,
+                end_date,
+                internship_id
+            ))
             conn.commit()
             return True
         except Exception as e:
             print(f"Error updating internship: {e}")
             return False
         finally:
-            cursor.close()
-            conn.close()
+            if 'conn' in locals() and conn.is_connected():
+                cursor.close()
+                conn.close()
 
     @staticmethod
     def delete_internship(internship_id):
-        """Delete an internship."""
+        """Delete an internship after handling related records."""
         try:
             conn = get_db_connection()
             cursor = conn.cursor()
+
+            # First update any students associated with this internship
+            cursor.execute("UPDATE students SET internship_id = NULL WHERE internship_id = %s", (internship_id,))
+            
+            # Then delete the internship
             cursor.execute("DELETE FROM internships WHERE id = %s", (internship_id,))
             conn.commit()
             return True
@@ -96,8 +171,9 @@ class Internship:
             print(f"Error deleting internship: {e}")
             return False
         finally:
-            cursor.close()
-            conn.close()
+            if 'conn' in locals() and conn.is_connected():
+                cursor.close()
+                conn.close()
 
     @staticmethod
     def get_by_id(internship_id):

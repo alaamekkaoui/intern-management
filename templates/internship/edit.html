@@ -54,6 +54,23 @@
             <input type="date" class="form-control" id="end_date" name="end_date" value="{{ internship.end_date }}" required>
         </div>
 
+        <div class="form-group">
+            <label for="num_ordre_mission">Numéro d'ordre de mission</label>
+            <input type="text" class="form-control" id="num_ordre_mission" name="num_ordre_mission" value="{{ internship.num_ordre_mission or '' }}">
+        </div>
+        <div class="form-group">
+            <label for="description">Objet/Description de la mission</label>
+            <textarea class="form-control" id="description" name="description">{{ internship.description or '' }}</textarea>
+        </div>
+        <div class="form-group">
+            <label for="destination">Destination</label>
+            <input type="text" class="form-control" id="destination" name="destination" value="{{ internship.destination or '' }}">
+        </div>
+        <div class="form-group">
+            <label for="kilometrage">Kilométrage</label>
+            <input type="number" class="form-control" id="kilometrage" name="kilometrage" value="{{ internship.kilometrage or '' }}">
+        </div>
+
         <button type="submit" class="btn btn-primary">Enregistrer</button>
     </form>
 

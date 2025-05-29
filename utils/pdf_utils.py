@@ -341,3 +341,89 @@ def generate_students_pdf(students):
     pdf_output.write(pdf_bytes)
     pdf_output.seek(0)
     return pdf_output
+
+def sample_student_xlsx():
+    from openpyxl import Workbook
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Students"
+    ws.append(["first_name", "last_name", "email", "phone", "internship_id", "teacher_id"])
+    ws.append(["John", "Doe", "john.doe@email.com", "0612345678", 1, 1])
+    xlsx_io = io.BytesIO()
+    wb.save(xlsx_io)
+    xlsx_io.seek(0)
+    return xlsx_io
+
+def sample_car_xlsx():
+    from openpyxl import Workbook
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Cars"
+    ws.append(["Name", "Model", "Type", "Brand", "License Plate", "Cost/Day", "Available Count"])
+    ws.append(["Car A", "4x4", "SUV", "Toyota", "ABC-123", 100.00, 2])
+    xlsx_io = io.BytesIO()
+    wb.save(xlsx_io)
+    xlsx_io.seek(0)
+    return xlsx_io
+
+def sample_internship_xlsx():
+    from openpyxl import Workbook
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Internships"
+    ws.append(["Title", "Teacher ID", "Intern Type ID", "Car ID", "Start Date", "End Date", "Status", "Num Ordre Mission", "Description", "Destination", "Kilometrage"])
+    ws.append(["AI Research", 1, 1, 1, "2024-07-01", "2024-08-01", "pending", "ORD-001", "Research on AI", "Rabat", 120])
+    xlsx_io = io.BytesIO()
+    wb.save(xlsx_io)
+    xlsx_io.seek(0)
+    return xlsx_io
+
+def import_cars_from_xlsx(file):
+    from models.car import Car
+    wb = openpyxl.load_workbook(file)
+    ws = wb.active
+    count = 0
+    errors = []
+    for i, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
+        row = list(row)
+        if len(row) < 7 or all(cell is None for cell in row):
+            errors.append(f"Ligne {i}: Données manquantes ou ligne vide.")
+            continue
+        name, model, car_type, brand, license_plate, cost_per_day, available_count = row[:7]
+        if not (name and model and car_type and brand and license_plate and cost_per_day is not None and available_count is not None):
+            errors.append(f"Ligne {i}: Données manquantes.")
+            continue
+        try:
+            success = Car.add_car(name, model, car_type, brand, license_plate, cost_per_day, available_count)
+            if success:
+                count += 1
+            else:
+                errors.append(f"Ligne {i}: Erreur lors de l'ajout de la voiture.")
+        except Exception as e:
+            errors.append(f"Ligne {i}: Erreur lors de l'ajout de la voiture: {e}")
+    return count, errors
+
+def import_internships_from_xlsx(file):
+    from models.internship import Internship
+    wb = openpyxl.load_workbook(file)
+    ws = wb.active
+    count = 0
+    errors = []
+    for i, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
+        row = list(row)
+        if len(row) < 11 or all(cell is None for cell in row):
+            errors.append(f"Ligne {i}: Données manquantes ou ligne vide.")
+            continue
+        title, teacher_id, intern_type_id, car_id, start_date, end_date, status, num_ordre_mission, description, destination, kilometrage = row[:11]
+        if not (title and teacher_id and intern_type_id and start_date and end_date and status):
+            errors.append(f"Ligne {i}: Données obligatoires manquantes.")
+            continue
+        try:
+            success = Internship.add_internship(teacher_id, intern_type_id, car_id, start_date, end_date, num_ordre_mission, description, destination, kilometrage)
+            if success:
+                count += 1
+            else:
+                errors.append(f"Ligne {i}: Erreur lors de l'ajout du stage.")
+        except Exception as e:
+            errors.append(f"Ligne {i}: Erreur lors de l'ajout du stage: {e}")
+    return count, errors

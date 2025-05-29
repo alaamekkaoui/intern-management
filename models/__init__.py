@@ -87,6 +87,10 @@ def create_all_tables():
             car_id INT,
             intern_type_id INT,  -- Adding foreign key to intern_types
             status ENUM('pending', 'canceled', 'done') DEFAULT 'pending',
+            num_ordre_mission VARCHAR(100),
+            description TEXT,
+            destination VARCHAR(255),
+            kilometrage INT,
             FOREIGN KEY (teacher_id) REFERENCES teachers(id) ON DELETE SET NULL,
             FOREIGN KEY (car_id) REFERENCES cars(id) ON DELETE SET NULL,
             FOREIGN KEY (intern_type_id) REFERENCES intern_types(id) ON DELETE SET NULL
@@ -148,9 +152,9 @@ def insert_dummy_data():
         """)
         # Insert dummy internships
         cursor.execute("""
-            INSERT INTO internships (title, start_date, end_date, teacher_id, car_id, intern_type_id, status) VALUES
-            ('AI Research', '2024-07-01', '2024-08-01', 1, 1, 1, 'pending'),
-            ('Math Fieldwork', '2024-07-15', '2024-08-15', 2, NULL, 2, 'pending')
+            INSERT INTO internships (title, start_date, end_date, teacher_id, car_id, intern_type_id, status, num_ordre_mission, description, destination, kilometrage) VALUES
+            ('AI Research', '2024-07-01', '2024-08-01', 1, 1, 1, 'pending', 'ORD-001', 'Recherche sur l\'IA appliquée', 'Rabat', 120),
+            ('Math Fieldwork', '2024-07-15', '2024-08-15', 2, NULL, 2, 'pending', 'ORD-002', 'Travail de terrain en mathématiques', 'Casablanca', 80)
         """)
         conn.commit()
         cursor.close()

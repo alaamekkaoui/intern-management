@@ -25,7 +25,7 @@
             <option value="">Aucun</option>
             {% for internship in internships %}
                 <option value="{{ internship.id }}" {% if internship_id and internship_id == internship.id %}selected{% endif %}>
-                    {{ internship.start_date }} - {{ internship.end_date }} | {{ internship.intern_type or 'N/A' }} | {{ internship.first_name }} {{ internship.last_name }}
+                    {{ internship.intern_type or 'N/A' }} | {{ internship.first_name }} {{ internship.last_name }}
                 </option>
             {% endfor %}
         </select>

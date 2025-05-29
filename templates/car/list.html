@@ -157,6 +157,33 @@
         {% endfor %}
     </tbody>
 </table>
+<div class="mb-3">
+    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#importCarModal"><i class="bi bi-upload"></i> Importer voitures (XLSX)</button>
+</div>
+<!-- Import Modal -->
+<div class="modal fade" id="importCarModal" tabindex="-1" aria-labelledby="importCarModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="/car/import/xlsx" enctype="multipart/form-data">
+        <div class="modal-header">
+          <h5 class="modal-title" id="importCarModalLabel">Importer voitures (XLSX)</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="file" class="form-label">Fichier XLSX</label>
+            <input type="file" class="form-control" id="file" name="file" accept=".xlsx" required>
+            <a href="/car/sample/xlsx" class="btn btn-link mt-1">Télécharger un modèle XLSX</a>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Importer</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Only one add/edit form open at a time

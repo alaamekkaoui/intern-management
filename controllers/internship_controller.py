@@ -48,6 +48,10 @@ class InternshipController:
         end_date = request.form['end_date']
         # If car_needed is checked, get car_id, else set to None
         car_id = request.form['car_id'] if 'car_needed' in request.form and request.form.get('car_id') else None
+        num_ordre_mission = request.form.get('num_ordre_mission')
+        description = request.form.get('description')
+        destination = request.form.get('destination')
+        kilometrage = request.form.get('kilometrage')
         
         # Check car availability if a car is selected
         if car_id:
@@ -58,7 +62,7 @@ class InternshipController:
                 return redirect('/internship')
 
         # Add internship
-        if Internship.add_internship(teacher_id, intern_type_id, car_id, start_date, end_date):
+        if Internship.add_internship(teacher_id, intern_type_id, car_id, start_date, end_date, num_ordre_mission, description, destination, kilometrage):
             internships = Internship.get_all()
             new_internship = internships[-1] if internships else None
             log_activity('add', 'internship', new_internship['id'] if new_internship else None)
@@ -150,9 +154,13 @@ class InternshipController:
         end_date = request.form['end_date']
         # If car_needed is checked, get car_id, else set to None
         car_id = request.form['car_id'] if 'car_needed' in request.form and request.form.get('car_id') else None
+        num_ordre_mission = request.form.get('num_ordre_mission')
+        description = request.form.get('description')
+        destination = request.form.get('destination')
+        kilometrage = request.form.get('kilometrage')
 
         # Update internship in the database
-        if Internship.update_internship(internship_id, teacher_id, intern_type_id, car_id, start_date, end_date):
+        if Internship.update_internship(internship_id, teacher_id, intern_type_id, car_id, start_date, end_date, num_ordre_mission, description, destination, kilometrage):
             log_activity('update', 'internship', internship_id)
             flash('Internship updated successfully.', 'success')  # Success message
             return redirect('/internship')

@@ -70,6 +70,13 @@ def init_routes(app):
         from flask import send_file
         return send_file(pdf_io, as_attachment=True, download_name='cars.pdf', mimetype='application/pdf')
 
+    @app.route('/car/sample/xlsx')
+    def sample_car_xlsx_route():
+        from utils.pdf_utils import sample_car_xlsx
+        xlsx_io = sample_car_xlsx()
+        from flask import send_file
+        return send_file(xlsx_io, as_attachment=True, download_name='sample_car_import.xlsx', mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
     # =============================== Department Routes ===============================
     @app.route('/department')
     def department_list():
@@ -275,6 +282,13 @@ def init_routes(app):
         from flask import send_file
         return send_file(pdf_io, as_attachment=True, download_name='internships.pdf', mimetype='application/pdf')
     
+    @app.route('/internship/sample/xlsx')
+    def sample_internship_xlsx_route():
+        from utils.pdf_utils import sample_internship_xlsx
+        xlsx_io = sample_internship_xlsx()
+        from flask import send_file
+        return send_file(xlsx_io, as_attachment=True, download_name='sample_internship_import.xlsx', mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
     # =============================== User Routes ===============================
     @app.route('/login', methods=['GET', 'POST'])
     def login_user():
@@ -496,3 +510,46 @@ def init_routes(app):
     def delete_student(student_id):
         from controllers.student_controller import StudentController
         return StudentController().delete_student(student_id)
+
+    @app.route('/car/import/xlsx', methods=['GET', 'POST'])
+    def import_cars_xlsx():
+        from flask import request, redirect, url_for, flash, render_template
+        # Placeholder: implement import_cars_from_xlsx in utils/pdf_utils.py
+        from utils.pdf_utils import import_cars_from_xlsx
+        if request.method == 'POST':
+            file = request.files.get('file')
+            if not file or not file.filename.endswith('.xlsx'):
+                flash('Veuillez sélectionner un fichier XLSX valide.', 'danger')
+                return redirect(request.url)
+            count, errors = import_cars_from_xlsx(file)
+            if errors:
+                flash(f"Import partiel: {count} voitures ajoutées. Erreurs: {errors}", 'warning')
+            else:
+                flash(f"{count} voitures importées avec succès!", 'success')
+            return redirect(url_for('car_list'))
+        return render_template('car/list.html')
+
+    @app.route('/internship/import/xlsx', methods=['GET', 'POST'])
+    def import_internships_xlsx():
+        from flask import request, redirect, url_for, flash, render_template
+        # Placeholder: implement import_internships_from_xlsx in utils/pdf_utils.py
+        from utils.pdf_utils import import_internships_from_xlsx
+        if request.method == 'POST':
+            file = request.files.get('file')
+            if not file or not file.filename.endswith('.xlsx'):
+                flash('Veuillez sélectionner un fichier XLSX valide.', 'danger')
+                return redirect(request.url)
+            count, errors = import_internships_from_xlsx(file)
+            if errors:
+                flash(f"Import partiel: {count} stages ajoutés. Erreurs: {errors}", 'warning')
+            else:
+                flash(f"{count} stages importés avec succès!", 'success')
+            return redirect(url_for('internship_list'))
+        return render_template('internship/list.html')
+
+    @app.route('/student/sample/xlsx')
+    def sample_student_xlsx_route():
+        from utils.pdf_utils import sample_student_xlsx
+        xlsx_io = sample_student_xlsx()
+        from flask import send_file
+        return send_file(xlsx_io, as_attachment=True, download_name='sample_student_import.xlsx', mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')

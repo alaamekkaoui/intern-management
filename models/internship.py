@@ -25,15 +25,15 @@ class Internship:
         return internships
 
     @staticmethod
-    def add_internship(teacher_id, intern_type_id, car_id, start_date, end_date):
-        """Add a new internship with the intern_type_id as a foreign key."""
+    def add_internship(teacher_id, intern_type_id, car_id, start_date, end_date, num_ordre_mission=None, description=None, destination=None, kilometrage=None):
+        """Add a new internship with the intern_type_id as a foreign key and new mission fields."""
         try:
             conn = get_db_connection()
             cursor = conn.cursor()
             cursor.execute("""
-                INSERT INTO internships (teacher_id, car_id, start_date, end_date, status, intern_type_id)
-                VALUES (%s, %s, %s, %s, 'pending', %s)
-            """, (teacher_id, car_id, start_date, end_date, intern_type_id))
+                INSERT INTO internships (teacher_id, car_id, start_date, end_date, status, intern_type_id, num_ordre_mission, description, destination, kilometrage)
+                VALUES (%s, %s, %s, %s, 'pending', %s, %s, %s, %s, %s)
+            """, (teacher_id, car_id, start_date, end_date, intern_type_id, num_ordre_mission, description, destination, kilometrage))
             conn.commit()
             return True
         except Exception as e:
@@ -64,8 +64,8 @@ class Internship:
             conn.close()
 
     @staticmethod
-    def update_internship(internship_id, teacher_id, intern_type_id, car_id, start_date, end_date):
-        """Update internship details, including intern_type_id as a foreign key."""
+    def update_internship(internship_id, teacher_id, intern_type_id, car_id, start_date, end_date, num_ordre_mission=None, description=None, destination=None, kilometrage=None):
+        """Update internship details, including new mission fields."""
         try:
             conn = get_db_connection()
             cursor = conn.cursor()
@@ -133,7 +133,11 @@ class Internship:
                     intern_type_id = %s,
                     car_id = %s,
                     start_date = %s,
-                    end_date = %s
+                    end_date = %s,
+                    num_ordre_mission = %s,
+                    description = %s,
+                    destination = %s,
+                    kilometrage = %s
                 WHERE id = %s
             """, (
                 teacher_id if teacher_id else None,
@@ -141,6 +145,10 @@ class Internship:
                 car_id if car_id else None,
                 start_date,
                 end_date,
+                num_ordre_mission,
+                description,
+                destination,
+                kilometrage,
                 internship_id
             ))
             conn.commit()

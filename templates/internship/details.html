@@ -12,6 +12,10 @@
             <li class="list-group-item"><strong>Voiture utilisée :</strong> {% if internship.car_model %}{{ internship.car_model }}{% if internship.license_plate %} - {{ internship.license_plate }}{% endif %}{% else %}Aucune{% endif %}</li>
             <li class="list-group-item"><strong>Date de début :</strong> {{ internship.start_date }}</li>
             <li class="list-group-item"><strong>Date de fin :</strong> {{ internship.end_date }}</li>
+            <li class="list-group-item"><strong>Numéro d'ordre de mission :</strong> {{ internship.num_ordre_mission or '' }}</li>
+            <li class="list-group-item"><strong>Objet/Description :</strong> {{ internship.description or '' }}</li>
+            <li class="list-group-item"><strong>Destination :</strong> {{ internship.destination or '' }}</li>
+            <li class="list-group-item"><strong>Kilométrage :</strong> {{ internship.kilometrage or '' }}</li>
             <li class="list-group-item"><strong>Status :</strong> {% if internship.status == 'pending' %}En attente{% elif internship.status == 'canceled' %}Annulé{% elif internship.status == 'done' %}Terminé{% else %}Inconnu{% endif %}</li>
             {% if internship.car_needed and car_cost_info %}
             <li class="list-group-item bg-light">

@@ -53,6 +53,7 @@ def register_car_routes(app):
         return send_file(xlsx_io, as_attachment=True, download_name='sample_car_import.xlsx', mimetype='application/vnd.openxmlformats-officedocument.spreadsheetla.sheet')
 
     @app.route('/car/import/xlsx', methods=['GET', 'POST'])
+    @role_required('admin', 'teacher', 'car')
     def import_cars_xlsx():
         if request.method == 'POST':
             file = request.files.get('file')

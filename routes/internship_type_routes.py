@@ -57,6 +57,7 @@ def register_internship_type_routes(app):
         return send_file(xlsx_io, as_attachment=True, download_name='sample_intern_type_import.xlsx', mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
     @app.route('/internship/types/import/xlsx', methods=['GET', 'POST'])
+    @role_required('admin', 'teacher', 'car')
     def import_intern_types_xlsx():
         if request.method == 'POST':
             if 'file' not in request.files or not request.files['file'].filename.endswith('.xlsx'):

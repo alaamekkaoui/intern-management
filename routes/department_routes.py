@@ -2,6 +2,7 @@ from flask import request, redirect, url_for, flash, render_template, send_file
 from controllers.department_controller import DepartmentController
 from models.department import Department
 from utils.pdf_utils import export_departments_pdf, export_departments_xlsx, sample_department_xlsx, import_departments_from_xlsx
+from utils.utils import role_required
 
 def register_department_routes(app):
     department_controller = DepartmentController()
@@ -45,6 +46,7 @@ def register_department_routes(app):
         return send_file(xlsx_io, as_attachment=True, download_name='sample_department_import.xlsx', mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
     @app.route('/department/import/xlsx', methods=['GET', 'POST'])
+    @role_required('admin', 'teacher', 'car')
     def import_departments_xlsx():
         if request.method == 'POST':
             file = request.files.get('file')

@@ -553,3 +553,32 @@ def export_single_internship_pdf(internship):
     pdf_output.write(pdf_bytes)
     pdf_output.seek(0)
     return pdf_output
+
+def export_students_xlsx(students):
+    """
+    Exports a list of students to an XLSX file.
+    """
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Étudiants"
+    ws.append(["Prénom", "Nom", "E-mail", "Téléphone", "Stage", "Type de Stage", "Enseignant"]) # Add headers
+
+    for s in students:
+        internship_title = s.get('internship_title', '') if s.get('internship_title') else ''
+        intern_type_name = s.get('intern_type_name', '') if s.get('intern_type_name') else ''
+        teacher_name = f"{s.get('teacher_first_name', '')} {s.get('teacher_last_name', '')}".strip()
+
+        ws.append([
+            s.get('first_name', ''),
+            s.get('last_name', ''),
+            s.get('email', ''),
+            s.get('phone', ''),
+            internship_title,
+            intern_type_name,
+            teacher_name
+        ])
+
+    xlsx_io = io.BytesIO()
+    wb.save(xlsx_io)
+    xlsx_io.seek(0)
+    return xlsx_io

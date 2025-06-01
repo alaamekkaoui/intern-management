@@ -54,6 +54,7 @@ def register_teacher_routes(app):
         return send_file(xlsx_io, as_attachment=True, download_name='teachers.xlsx', mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
     @app.route('/teacher/import/xlsx', methods=['GET', 'POST'])
+    @role_required('admin', 'teacher', 'car')
     def import_teachers_xlsx():
         if request.method == 'POST':
             file = request.files.get('file')

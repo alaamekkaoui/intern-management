@@ -2,7 +2,7 @@ from flask import request, redirect, url_for, flash, render_template, send_file
 from controllers.student_controller import StudentController
 from models.student import Student
 from utils.utils import role_required
-from utils.pdf_utils import sample_student_xlsx
+from utils.pdf_utils import sample_student_xlsx, export_students_xlsx
 
 def register_student_routes(app):
     student_controller = StudentController()
@@ -38,6 +38,29 @@ def register_student_routes(app):
     def sample_student_xlsx_route():
         xlsx_io = sample_student_xlsx()
         return send_file(xlsx_io, as_attachment=True, download_name='sample_student_import.xlsx', mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+    @app.route('/student/export/xlsx')
+    def export_students_xlsx_route():
+        students = Student.get_all() # Fetch all students
+        xlsx_io = export_students_xlsx(students) # Use the new function
+        return send_file(xlsx_io, as_attachment=True, download_name='students.xlsx', mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+    @app.route('/student/import/xlsx', methods=['GET', 'POST'])
+    @role_required('admin', 'teacher', 'car')
+    def import_students_xlsx():
+        if request.method == 'POST':
+            file = request.files.get('file')
+            if not file or not file.filename.endswith('.xlsx'):
+                flash('Veuillez sélectionner un fichier XLSX valide.', 'danger')
+                return redirect(request.url)
+            internship_id = request.form.get('internship_id')
+            count, errors = student_controller.import_students_xlsx(file, internship_id)
+            if errors:
+                flash(f"Import partiel: {count} étudiants ajoutés. Erreurs: {errors}", 'warning')
+            else:
+                flash(f"{count} étudiants importés avec succès!", 'success')
+            return redirect(url_for('student_list'))
+        return render_template('student/import_xlsx.html')
 
     @app.route('/student/<int:student_id>')
     @role_required('admin', 'teacher')

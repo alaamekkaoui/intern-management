@@ -4,6 +4,8 @@ class Internship:
     @staticmethod
     def get_all():
         """Fetch all internships with teacher, car, and intern_type details."""
+        conn = None
+        cursor = None
         try:
             conn = get_db_connection()
             cursor = conn.cursor(dictionary=True)
@@ -20,8 +22,10 @@ class Internship:
             print(f"Error fetching internships: {e}")
             internships = []
         finally:
-            cursor.close()
-            conn.close()
+            if cursor:
+                cursor.close()
+            if conn and conn.is_connected():
+                conn.close()
         return internships
 
     @staticmethod

@@ -2,307 +2,350 @@
 
 {% block title %}Liste des Stages{% endblock %}
 
+{% block sidebar %}
+<div class="d-flex flex-column gap-3" style="margin-top: 185px;">
+    {% if session.get('role') in ['admin', 'teacher'] %}
+        <button class="btn btn-success w-100 add-internship-btn" type="button" data-bs-toggle="collapse" data-bs-target="#addInternshipForm" aria-expanded="false" aria-controls="addInternshipForm">
+            <i class="bi bi-plus-circle"></i> Ajouter un Stage
+        </button>
+        <button class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#importInternshipModal">
+            <i class="bi bi-upload"></i> Importer stages (XLSX)
+        </button>
+    {% endif %}
+    <a href="/internship/export/pdf" class="btn btn-outline-danger w-100">
+        <i class="bi bi-file-earmark-pdf"></i> Exporter PDF
+    </a>
+    <a href="/internship/export/xlsx" class="btn btn-outline-success w-100">
+        <i class="bi bi-file-earmark-excel"></i> Exporter XLSX
+    </a>
+</div>
+{% endblock %}
+
 {% block content %}
-<div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
-    <h2 class="mb-0 text-success"><i class="bi bi-journal-text"></i> Liste des Stages</h2>
-    <div class="d-flex gap-2">
-        {% if session.get('role') in ['admin', 'teacher'] %}
-            <button class="btn btn-success add-internship-btn" type="button" data-bs-toggle="collapse" data-bs-target="#addInternshipForm" aria-expanded="false" aria-controls="addInternshipForm"><i class="bi bi-plus-circle"></i> Ajouter un Stage</button>
-        {% endif %}
-        <a href="/internship/export/pdf" class="btn btn-outline-danger"><i class="bi bi-file-earmark-pdf"></i> Exporter PDF</a>
-        <a href="/internship/export/xlsx" class="btn btn-outline-success"><i class="bi bi-file-earmark-excel"></i> Exporter XLSX</a>
+<div class="container-fluid">
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
+        <h2 class="mb-0 text-success"><i class="bi bi-journal-text"></i> Liste des Stages</h2>
     </div>
-</div>
-<form class="row g-2 align-items-end mb-3" method="get" action="">
-    <div class="col-auto">
-        <input type="text" class="form-control" name="teacher_name" placeholder="Nom de l'enseignant" value="{{ request.args.get('teacher_name', '') }}">
-    </div>
-    <div class="col-auto">
-        <select class="form-select" name="intern_type_id" onchange="this.form.submit()">
-            <option value="">Type de stage</option>
-            {% for type in intern_types %}
-                <option value="{{ type.id }}" {% if request.args.get('intern_type_id') == type.id|string %}selected{% endif %}>{{ type.name }}</option>
+    <form class="row g-2 align-items-end mb-3" method="get" action="">
+        <div class="col-auto">
+            <input type="text" class="form-control" name="teacher_name" placeholder="Nom de l'enseignant" value="{{ request.args.get('teacher_name', '') }}">
+        </div>
+        <div class="col-auto">
+            <select class="form-select" name="intern_type_id" onchange="this.form.submit()">
+                <option value="">Type de stage</option>
+                {% for type in intern_types %}
+                    <option value="{{ type.id }}" {% if request.args.get('intern_type_id') == type.id|string %}selected{% endif %}>{{ type.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-auto">
+            <select class="form-select" name="car_needed" onchange="this.form.submit()">
+                <option value="">Voiture nécessaire</option>
+                <option value="1" {% if request.args.get('car_needed') == '1' %}selected{% endif %}>Oui</option>
+                <option value="0" {% if request.args.get('car_needed') == '0' %}selected{% endif %}>Non</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <select class="form-select" name="status" onchange="this.form.submit()">
+                <option value="">Statut</option>
+                <option value="pending" {% if request.args.get('status') == 'pending' %}selected{% endif %}>En attente</option>
+                <option value="canceled" {% if request.args.get('status') == 'canceled' %}selected{% endif %}>Annulé</option>
+                <option value="done" {% if request.args.get('status') == 'done' %}selected{% endif %}>Terminé</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-outline-primary"><i class="bi bi-search"></i> Rechercher</button>
+        </div>
+        <div class="col-auto">
+            <a href="/internship" class="btn btn-outline-secondary">Réinitialiser</a>
+        </div>
+    </form>
+    <div class="collapse mb-3" id="addInternshipForm">
+      <form action="/internship/add" method="POST" class="border rounded p-3 bg-light">
+        <div class="form-group mb-2">
+          <label for="teacher_id">Enseignant</label>
+          <select class="form-control" id="teacher_id" name="teacher_id" required>
+            {% for teacher in teachers %}
+              <option value="{{ teacher.id }}">{{ teacher.first_name }} {{ teacher.last_name }}</option>
             {% endfor %}
-        </select>
-    </div>
-    <div class="col-auto">
-        <select class="form-select" name="car_needed" onchange="this.form.submit()">
-            <option value="">Voiture nécessaire</option>
-            <option value="1" {% if request.args.get('car_needed') == '1' %}selected{% endif %}>Oui</option>
-            <option value="0" {% if request.args.get('car_needed') == '0' %}selected{% endif %}>Non</option>
-        </select>
-    </div>
-    <div class="col-auto">
-        <select class="form-select" name="status" onchange="this.form.submit()">
-            <option value="">Statut</option>
-            <option value="pending" {% if request.args.get('status') == 'pending' %}selected{% endif %}>En attente</option>
-            <option value="canceled" {% if request.args.get('status') == 'canceled' %}selected{% endif %}>Annulé</option>
-            <option value="done" {% if request.args.get('status') == 'done' %}selected{% endif %}>Terminé</option>
-        </select>
-    </div>
-    <div class="col-auto">
-        <button type="submit" class="btn btn-outline-primary"><i class="bi bi-search"></i> Rechercher</button>
-    </div>
-    <div class="col-auto">
-        <a href="/internship" class="btn btn-outline-secondary">Réinitialiser</a>
-    </div>
-</form>
-<div class="collapse mb-3" id="addInternshipForm">
-  <form action="/internship/add" method="POST" class="border rounded p-3 bg-light">
-    <div class="form-group mb-2">
-      <label for="teacher_id">Enseignant</label>
-      <select class="form-control" id="teacher_id" name="teacher_id" required>
-        {% for teacher in teachers %}
-          <option value="{{ teacher.id }}">{{ teacher.first_name }} {{ teacher.last_name }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="form-group mb-2">
-      <label for="intern_type_id">Type de Stage</label>
-      <select class="form-control" id="intern_type_id" name="intern_type_id" required>
-        {% for type in intern_types %}
-          <option value="{{ type.id }}">{{ type.name }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="form-group form-check mb-2">
-      <input type="checkbox" class="form-check-input" id="car_needed_add" name="car_needed" />
-      <label class="form-check-label" for="car_needed_add">Voiture nécessaire</label>
-    </div>
-    <div class="form-group mb-2" id="car_type_div_add" style="display:none;">
-      <label for="car_id">Voiture</label>
-      <select class="form-control" id="car_id_add" name="car_id">
-        {% for car in cars %}
-          <option value="{{ car.id }}">{{ car.model }} - {{ car.brand }} - {{ car.license_plate }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="form-group mb-2">
-      <label for="start_date">Date de début</label>
-      <input type="date" class="form-control" id="start_date" name="start_date" required>
-    </div>
-    <div class="form-group mb-2">
-      <label for="end_date">Date de fin</label>
-      <input type="date" class="form-control" id="end_date" name="end_date" required>
-    </div>
-    <div class="form-group mb-2">
-      <label for="num_ordre_mission">Numéro d'ordre de mission</label>
-      <input type="text" class="form-control" id="num_ordre_mission" name="num_ordre_mission">
-    </div>
-    <div class="form-group mb-2">
-      <label for="description">Objet/Description de la mission</label>
-      <textarea class="form-control" id="description" name="description"></textarea>
-    </div>
-    <div class="form-group mb-2">
-      <label for="destination">Destination</label>
-      <input type="text" class="form-control" id="destination" name="destination">
-    </div>
-    <div class="form-group mb-2">
-      <label for="kilometrage">Kilométrage</label>
-      <input type="number" class="form-control" id="kilometrage" name="kilometrage">
-    </div>
-    <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Ajouter</button>
-    <button type="button" class="btn btn-secondary ms-2 cancel-add-internship-btn" data-bs-toggle="collapse" data-bs-target="#addInternshipForm"><i class="bi bi-x-circle"></i> Annuler</button>
-  </form>
-</div>
-<table class="table">
-    <thead class="table-success">
-        <tr>
-            <th>Nom de l'enseignant</th>
-            <th>Type de stage</th>
-            <th>Voiture nécessaire</th>
-            <th>Statut</th>
-            <th>Début</th>
-            <th>Fin</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for internship in internships %}
-        <tr>
-            <td>{{ internship.first_name }} {{ internship.last_name }}</td>
-            <td>{{ internship.intern_type if internship.intern_type else 'N/A' }}</td>
-            <td>{{ 'Oui' if internship.car_id else 'Non' }}</td>
-            <td>
-                {% if internship.status == 'pending' %}En attente{% elif internship.status == 'canceled' %}Annulé{% elif internship.status == 'done' %}Terminé{% else %}Inconnu{% endif %}
-            </td>
-            <td>{{ internship.start_date }}</td>
-            <td>{{ internship.end_date }}</td>
-            <td>
-                <a href="/internship/details/{{ internship.id }}" class="btn btn-info btn-sm mb-1"><i class="bi bi-info-circle"></i> Détail</a>
-                <div class="btn-group mb-1" role="group">
-                    <a href="/internship/{{ internship.id }}/students/export/pdf" class="btn btn-outline-danger btn-sm" title="Exporter étudiants PDF"><i class="bi bi-file-earmark-pdf"></i> Étudiants PDF</a>
-                    <a href="/internship/{{ internship.id }}/students/export/xlsx" class="btn btn-outline-success btn-sm" title="Exporter étudiants XLSX"><i class="bi bi-file-earmark-excel"></i> Étudiants XLSX</a>
-                </div>
-                {% if session.get('role') in ['admin', 'teacher'] and internship.status == 'pending' %}
-                    <form action="/internship/mark_done/{{ internship.id }}" method="POST" style="display:inline;">
-                        <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-check-circle"></i></button>
-                    </form>
-                    <form action="/internship/cancel/{{ internship.id }}" method="POST" style="display:inline;">
-                        <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-x-circle"></i></button>
-                    </form>
-                {% endif %}
-                {% if session.get('role') in ['admin', 'teacher'] %}
-                    <button class="btn btn-primary btn-sm edit-internship-btn" type="button" data-bs-toggle="collapse" data-bs-target="#editInternshipForm{{ internship.id }}" aria-expanded="false" aria-controls="editInternshipForm{{ internship.id }}"><i class="bi bi-pencil"></i></button>
-                    {% if session.get('role') == 'admin' %}
-                        <form action="/internship/delete/{{ internship.id }}" method="POST" style="display:inline;">
-                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce stage ?');">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </form>
-                    {% endif %}
-                {% endif %}
-            </td>
-        </tr>
-        <!-- Modal for XLSX import for this internship -->
-        <div class="modal fade" id="importStudentModal{{ internship.id }}" tabindex="-1" aria-labelledby="importStudentModalLabel{{ internship.id }}" aria-hidden="true">
-          <div class="modal-dialog">
-            <div class="modal-content">
-              <form method="post" action="/student/import/xlsx" enctype="multipart/form-data">
-                <div class="modal-header">
-                  <h5 class="modal-title" id="importStudentModalLabel{{ internship.id }}">Importer étudiants (XLSX) pour ce stage</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                  <input type="hidden" name="internship_id" value="{{ internship.id }}">
-                  <div class="mb-3">
-                    <label for="file{{ internship.id }}" class="form-label">Fichier XLSX</label>
-                    <input type="file" class="form-control" id="file{{ internship.id }}" name="file" accept=".xlsx" required>
-                  </div>
-                  <a href="/student/sample/xlsx" class="btn btn-link">Télécharger un modèle XLSX</a>
-                </div>
-                <div class="modal-footer">
-                  <button type="submit" class="btn btn-primary">Importer</button>
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                </div>
-              </form>
-            </div>
-          </div>
+          </select>
         </div>
-        <tr class="collapse" id="editInternshipForm{{ internship.id }}">
-            <td colspan="7">
-                <form action="/internship/edit/{{ internship.id }}" method="POST" class="border rounded p-3 bg-light">
-                    <div class="form-group mb-2">
-                        <label for="teacher_id{{ internship.id }}">Enseignant</label>
-                        <select class="form-control" id="teacher_id{{ internship.id }}" name="teacher_id" required>
-                            {% for teacher in teachers %}
-                                <option value="{{ teacher.id }}" {% if teacher.id == internship.teacher_id %}selected{% endif %}>{{ teacher.first_name }} {{ teacher.last_name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="form-group mb-2">
-                        <label for="intern_type_id{{ internship.id }}">Type de Stage</label>
-                        <select class="form-control" id="intern_type_id{{ internship.id }}" name="intern_type_id" required>
-                            {% for type in intern_types %}
-                                <option value="{{ type.id }}" {% if type.id == internship.intern_type_id %}selected{% endif %}>{{ type.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="form-group form-check mb-2">
-                        <input type="checkbox" class="form-check-input car-needed-edit" id="car_needed_edit{{ internship.id }}" name="car_needed" {% if internship.car_id %}checked{% endif %} />
-                        <label class="form-check-label" for="car_needed_edit{{ internship.id }}">Voiture nécessaire</label>
-                    </div>
-                    <div class="form-group mb-2 car-type-div-edit" id="car_type_div_edit{{ internship.id }}" style="display:{{ 'block' if internship.car_id else 'none' }}">
-                        <label for="car_id{{ internship.id }}">Voiture</label>
-                        <select class="form-control" id="car_id{{ internship.id }}" name="car_id">
-                            {% for car in cars %}
-                                <option value="{{ car.id }}" {% if car.id == internship.car_id %}selected{% endif %}>{{ car.model }} - {{ car.brand }} - {{ car.license_plate }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="form-group mb-2">
-                        <label for="start_date{{ internship.id }}">Date de début</label>
-                        <input type="date" class="form-control" id="start_date{{ internship.id }}" name="start_date" value="{{ internship.start_date }}" required>
-                    </div>
-                    <div class="form-group mb-2">
-                        <label for="end_date{{ internship.id }}">Date de fin</label>
-                        <input type="date" class="form-control" id="end_date{{ internship.id }}" name="end_date" value="{{ internship.end_date }}" required>
-                    </div>
-                    <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> Enregistrer</button>
-                    <button type="button" class="btn btn-secondary ms-2 cancel-edit-internship-btn" data-bs-toggle="collapse" data-bs-target="#editInternshipForm{{ internship.id }}"><i class="bi bi-x-circle"></i> Annuler</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-<div class="mb-3">
-    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#importInternshipModal"><i class="bi bi-upload"></i> Importer stages (XLSX)</button>
-</div>
-<!-- Import Modal -->
-<div class="modal fade" id="importInternshipModal" tabindex="-1" aria-labelledby="importInternshipModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form method="post" action="/internship/import/xlsx" enctype="multipart/form-data">
-        <div class="modal-header">
-          <h5 class="modal-title" id="importInternshipModalLabel">Importer stages (XLSX)</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="form-group mb-2">
+          <label for="intern_type_id">Type de Stage</label>
+          <select class="form-control" id="intern_type_id" name="intern_type_id" required>
+            {% for type in intern_types %}
+              <option value="{{ type.id }}">{{ type.name }}</option>
+            {% endfor %}
+          </select>
         </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label for="file" class="form-label">Fichier XLSX</label>
-            <input type="file" class="form-control" id="file" name="file" accept=".xlsx" required>
-            <a href="/internship/sample/xlsx" class="btn btn-link mt-1">Télécharger un modèle XLSX</a>
-          </div>
+        <div class="form-group form-check mb-2">
+          <input type="checkbox" class="form-check-input" id="car_needed_add" name="car_needed" />
+          <label class="form-check-label" for="car_needed_add">Voiture nécessaire</label>
         </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">Importer</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <div class="form-group mb-2" id="car_type_div_add" style="display:none;">
+          <label for="car_id">Voiture</label>
+          <select class="form-control" id="car_id_add" name="car_id">
+            {% for car in cars %}
+              <option value="{{ car.id }}">{{ car.model }} - {{ car.brand }} - {{ car.license_plate }}</option>
+            {% endfor %}
+          </select>
         </div>
+        <div class="form-group mb-2">
+          <label for="start_date">Date de début</label>
+          <input type="date" class="form-control" id="start_date" name="start_date" required>
+        </div>
+        <div class="form-group mb-2">
+          <label for="end_date">Date de fin</label>
+          <input type="date" class="form-control" id="end_date" name="end_date" required>
+        </div>
+        <div class="form-group mb-2">
+          <label for="num_ordre_mission">Numéro d'ordre de mission</label>
+          <input type="text" class="form-control" id="num_ordre_mission" name="num_ordre_mission">
+        </div>
+        <div class="form-group mb-2">
+          <label for="description">Objet/Description de la mission</label>
+          <textarea class="form-control" id="description" name="description"></textarea>
+        </div>
+        <div class="form-group mb-2">
+          <label for="destination">Destination</label>
+          <input type="text" class="form-control" id="destination" name="destination">
+        </div>
+        <div class="form-group mb-2">
+          <label for="kilometrage">Kilométrage</label>
+          <input type="number" class="form-control" id="kilometrage" name="kilometrage">
+        </div>
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Ajouter</button>
+        <button type="button" class="btn btn-secondary ms-2 cancel-add-internship-btn" data-bs-toggle="collapse" data-bs-target="#addInternshipForm"><i class="bi bi-x-circle"></i> Annuler</button>
       </form>
     </div>
-  </div>
+    <table class="table">
+        <thead class="table-success">
+            <tr>
+                <th>Nom de l'enseignant</th>
+                <th>Type de stage</th>
+                <th>Voiture nécessaire</th>
+                <th>Statut</th>
+                <th>Début</th>
+                <th>Fin</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for internship in internships %}
+            <tr>
+                <td>{{ internship.first_name }} {{ internship.last_name }}</td>
+                <td>{{ internship.intern_type if internship.intern_type else 'N/A' }}</td>
+                <td>{{ 'Oui' if internship.car_id else 'Non' }}</td>
+                <td>
+                    {% if internship.status == 'pending' %}En attente{% elif internship.status == 'canceled' %}Annulé{% elif internship.status == 'done' %}Terminé{% else %}Inconnu{% endif %}
+                </td>
+                <td>{{ internship.start_date }}</td>
+                <td>{{ internship.end_date }}</td>
+                <td>
+                    <div class="d-flex flex-column gap-2">
+                        {% if session.get('role') in ['admin', 'teacher'] and internship.status == 'pending' %}
+                            <div class="d-flex gap-2">
+                                <form action="/internship/mark_done/{{ internship.id }}" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn btn-success rounded-3 px-3"><i class="bi bi-check-circle"></i> Terminer</button>
+                                </form>
+                                <form action="/internship/cancel/{{ internship.id }}" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger rounded-3 px-3"><i class="bi bi-x-circle"></i> Annuler</button>
+                                </form>
+                            </div>
+                        {% endif %}
+                        <div class="d-flex gap-2">
+                            <a href="/internship/details/{{ internship.id }}" class="btn btn-info rounded-3" title="Détail"><i class="bi bi-info-circle"></i></a>
+                            {% if session.get('role') in ['admin', 'teacher'] %}
+                                <button class="btn btn-primary rounded-3 edit-internship-btn" type="button" data-bs-toggle="collapse" data-bs-target="#editInternshipForm{{ internship.id }}" aria-expanded="false" aria-controls="editInternshipForm{{ internship.id }}" title="Modifier"><i class="bi bi-pencil"></i></button>
+                                {% if session.get('role') == 'admin' %}
+                                    <form action="/internship/delete/{{ internship.id }}" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn btn-danger rounded-3" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce stage ?');" title="Supprimer">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <!-- Modal for XLSX import for this internship -->
+            <div class="modal fade" id="importStudentModal{{ internship.id }}" tabindex="-1" aria-labelledby="importStudentModalLabel{{ internship.id }}" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <form method="post" action="/student/import/xlsx" enctype="multipart/form-data">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="importStudentModalLabel{{ internship.id }}">Importer étudiants (XLSX) pour ce stage</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <input type="hidden" name="internship_id" value="{{ internship.id }}">
+                      <div class="mb-3">
+                        <label for="file{{ internship.id }}" class="form-label">Fichier XLSX</label>
+                        <input type="file" class="form-control" id="file{{ internship.id }}" name="file" accept=".xlsx" required>
+                      </div>
+                      <a href="/student/sample/xlsx" class="btn btn-link">Télécharger un modèle XLSX</a>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="submit" class="btn btn-primary">Importer</button>
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+            <tr class="collapse" id="editInternshipForm{{ internship.id }}">
+                <td colspan="7">
+                    <form action="/internship/edit/{{ internship.id }}" method="POST" class="border rounded p-3 bg-light">
+                        <div class="form-group mb-2">
+                            <label for="teacher_id{{ internship.id }}">Enseignant</label>
+                            <select class="form-control" id="teacher_id{{ internship.id }}" name="teacher_id" required>
+                                {% for teacher in teachers %}
+                                    <option value="{{ teacher.id }}" {% if teacher.id == internship.teacher_id %}selected{% endif %}>{{ teacher.first_name }} {{ teacher.last_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group mb-2">
+                            <label for="intern_type_id{{ internship.id }}">Type de Stage</label>
+                            <select class="form-control" id="intern_type_id{{ internship.id }}" name="intern_type_id" required>
+                                {% for type in intern_types %}
+                                    <option value="{{ type.id }}" {% if type.id == internship.intern_type_id %}selected{% endif %}>{{ type.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group form-check mb-2">
+                            <input type="checkbox" class="form-check-input car-needed-edit" id="car_needed_edit{{ internship.id }}" name="car_needed" {% if internship.car_id %}checked{% endif %} />
+                            <label class="form-check-label" for="car_needed_edit{{ internship.id }}">Voiture nécessaire</label>
+                        </div>
+                        <div class="form-group mb-2 car-type-div-edit" id="car_type_div_edit{{ internship.id }}" style="display:{{ 'block' if internship.car_id else 'none' }}">
+                            <label for="car_id{{ internship.id }}">Voiture</label>
+                            <select class="form-control" id="car_id{{ internship.id }}" name="car_id">
+                                {% for car in cars %}
+                                    <option value="{{ car.id }}" {% if car.id == internship.car_id %}selected{% endif %}>{{ car.model }} - {{ car.brand }} - {{ car.license_plate }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group mb-2">
+                            <label for="start_date{{ internship.id }}">Date de début</label>
+                            <input type="date" class="form-control" id="start_date{{ internship.id }}" name="start_date" value="{{ internship.start_date }}" required>
+                        </div>
+                        <div class="form-group mb-2">
+                            <label for="end_date{{ internship.id }}">Date de fin</label>
+                            <input type="date" class="form-control" id="end_date{{ internship.id }}" name="end_date" value="{{ internship.end_date }}" required>
+                        </div>
+                        <div class="form-group mb-2">
+                            <label for="num_ordre_mission{{ internship.id }}">Numéro d'ordre de mission</label>
+                            <input type="text" class="form-control" id="num_ordre_mission{{ internship.id }}" name="num_ordre_mission" value="{{ internship.num_ordre_mission or '' }}">
+                        </div>
+                        <div class="form-group mb-2">
+                            <label for="description{{ internship.id }}">Objet/Description de la mission</label>
+                            <textarea class="form-control" id="description{{ internship.id }}" name="description">{{ internship.description or '' }}</textarea>
+                        </div>
+                        <div class="form-group mb-2">
+                            <label for="destination{{ internship.id }}">Destination</label>
+                            <input type="text" class="form-control" id="destination{{ internship.id }}" name="destination" value="{{ internship.destination or '' }}">
+                        </div>
+                        <div class="form-group mb-2">
+                            <label for="kilometrage{{ internship.id }}">Kilométrage</label>
+                            <input type="number" class="form-control" id="kilometrage{{ internship.id }}" name="kilometrage" value="{{ internship.kilometrage or '' }}">
+                        </div>
+                        <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> Enregistrer</button>
+                        <button type="button" class="btn btn-secondary ms-2 cancel-edit-internship-btn" data-bs-toggle="collapse" data-bs-target="#editInternshipForm{{ internship.id }}"><i class="bi bi-x-circle"></i> Annuler</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <!-- Import Modal -->
+    <div class="modal fade" id="importInternshipModal" tabindex="-1" aria-labelledby="importInternshipModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form method="post" action="/internship/import/xlsx" enctype="multipart/form-data">
+            <div class="modal-header">
+              <h5 class="modal-title" id="importInternshipModalLabel">Importer stages (XLSX)</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="file" class="form-label">Fichier XLSX</label>
+                <input type="file" class="form-control" id="file" name="file" accept=".xlsx" required>
+                <a href="/internship/sample/xlsx" class="btn btn-link mt-1">Télécharger un modèle XLSX</a>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-primary">Importer</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Function to toggle car type div visibility
+        function toggleCarTypeDiv(checkboxId, divId) {
+          var checkbox = document.getElementById(checkboxId);
+          var div = document.getElementById(divId);
+          if (checkbox && div) {
+            checkbox.addEventListener('change', function() {
+              div.style.display = this.checked ? 'block' : 'none';
+            });
+          }
+        }
+
+        // For Add Internship Form
+        toggleCarTypeDiv('car_needed_add', 'car_type_div_add');
+
+        // For Edit Internship Forms (iterate through each form)
+        document.querySelectorAll('.car-needed-edit').forEach(function(checkbox) {
+          var internshipId = checkbox.id.replace('car_needed_edit', '');
+          toggleCarTypeDiv(checkbox.id, 'car_type_div_edit' + internshipId);
+        });
+
+         // Script to handle collapsible forms when buttons are clicked
+        document.querySelectorAll('.add-internship-btn, .cancel-add-internship-btn, .edit-internship-btn, .cancel-edit-internship-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                // Close other open collapsible forms (edit forms only)
+                document.querySelectorAll('.collapse.show').forEach(function(openCollapse) {
+                    // Check if the open collapse is an edit form (has an ID starting with editInternshipForm)
+                    if (openCollapse.id.startsWith('editInternshipForm')) {
+                         // Check if the clicked button is not the cancel button for this specific edit form
+                         if (!button.classList.contains('cancel-edit-internship-btn') || button.dataset.bsTarget !== '#' + openCollapse.id) {
+                             var collapseInstance = bootstrap.Collapse.getInstance(openCollapse);
+                             if (collapseInstance) {
+                                 collapseInstance.hide();
+                             } else {
+                                  // If instance not found, manually remove the show class and add collapsing class for animation
+                                  openCollapse.classList.remove('show');
+                                  openCollapse.classList.add('collapsing');
+                                   // Timeout to remove collapsing class after animation (approx 350ms for Bootstrap 5)
+                                   setTimeout(function() {
+                                        openCollapse.classList.remove('collapsing');
+                                   }, 350);
+                         }
+                     }
+                    } else if (openCollapse.id === 'addInternshipForm') { // Handle add form collapse
+                         if (!button.classList.contains('cancel-add-internship-btn')) {
+                              var collapseInstance = bootstrap.Collapse.getInstance(openCollapse);
+                              if (collapseInstance) {
+                                 collapseInstance.hide();
+                              } else {
+                                   // If instance not found, manually remove the show class and add collapsing class for animation
+                                  openCollapse.classList.remove('show');
+                                  openCollapse.classList.add('collapsing');
+                                   setTimeout(function() {
+                                        openCollapse.classList.remove('collapsing');
+                                   }, 350);
+                              }
+                         }
+                    }
+                });
+            });
+        });
+      });
+    </script>
+
 </div>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Only one add/edit form open at a time
-    function closeAllInternshipForms(except) {
-        document.querySelectorAll('.collapse').forEach(collapse => {
-            if ('#' + collapse.id !== except) {
-                collapse.classList.remove('show');
-            }
-        });
-    }
-    document.querySelectorAll('.add-internship-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            closeAllInternshipForms('#addInternshipForm');
-        });
-    });
-    document.querySelectorAll('.edit-internship-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const target = btn.getAttribute('data-bs-target');
-            closeAllInternshipForms(target);
-        });
-    });
-    document.querySelectorAll('.cancel-add-internship-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelector('#addInternshipForm').classList.remove('show');
-        });
-    });
-    document.querySelectorAll('.cancel-edit-internship-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const target = btn.getAttribute('data-bs-target');
-            document.querySelector(target).classList.remove('show');
-        });
-    });
-    // Add form car needed toggle
-    const carNeededAdd = document.getElementById('car_needed_add');
-    const carTypeDivAdd = document.getElementById('car_type_div_add');
-    if (carNeededAdd && carTypeDivAdd) {
-        carNeededAdd.addEventListener('change', function() {
-            carTypeDivAdd.style.display = this.checked ? 'block' : 'none';
-        });
-    }
-    // Edit form car needed toggle
-    document.querySelectorAll('.car-needed-edit').forEach(function(checkbox) {
-        checkbox.addEventListener('change', function() {
-            const id = this.id.replace('car_needed_edit', '');
-            const carDiv = document.getElementById('car_type_div_edit' + id);
-            if (carDiv) {
-                carDiv.style.display = this.checked ? 'block' : 'none';
-            }
-        });
-    });
-});
-</script>
 {% endblock %}

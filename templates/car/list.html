@@ -2,247 +2,288 @@
 
 {% block title %}Liste des Voitures{% endblock %}
 
-{% block content %}
-<h2><i class="bi bi-truck"></i> Liste des Voitures</h2>
-<div class="d-flex align-items-center gap-2 mb-2">
+{% block sidebar %}
+<div class="d-flex flex-column gap-3" style="margin-top: 185px;">
     {% if session.get('role') in ['admin', 'car'] %}
-        <button class="btn btn-success add-car-btn" type="button" data-bs-toggle="collapse" data-bs-target="#addCarForm" aria-expanded="false" aria-controls="addCarForm"><i class="bi bi-plus-circle"></i> Ajouter une Voiture</button>
+        <button class="btn btn-success w-100 add-car-btn" type="button" data-bs-toggle="collapse" data-bs-target="#addCarForm" aria-expanded="false" aria-controls="addCarForm">
+            <i class="bi bi-plus-circle"></i> Ajouter une Voiture
+        </button>
+        <button class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#importCarModal">
+            <i class="bi bi-upload"></i> Importer voitures (XLSX)
+        </button>
     {% endif %}
-    <a href="/car/export/pdf" class="btn btn-outline-danger"><i class="bi bi-file-earmark-pdf"></i> Exporter PDF</a>
-    <a href="/car/export/xlsx" class="btn btn-outline-success"><i class="bi bi-file-earmark-excel"></i> Exporter XLSX</a>
+    <a href="/car/export/pdf" class="btn btn-outline-danger w-100">
+        <i class="bi bi-file-earmark-pdf"></i> Exporter PDF
+    </a>
+    <a href="/car/export/xlsx" class="btn btn-outline-success w-100">
+        <i class="bi bi-file-earmark-excel"></i> Exporter XLSX
+    </a>
 </div>
-<div class="collapse mb-3" id="addCarForm">
-  <form action="/car/add" method="POST" class="border rounded p-3 bg-light">
-    <div class="form-group">
-        <label for="model_select">Modèle du véhicule</label>
-        <select class="form-control" id="model_select" name="model">
-            <option value="">-- Sélectionner un modèle --</option>
-            <option value="4x4">4x4</option>
-            <option value="Normal">Normal</option>
-            <option value="Bus">Bus</option>
-            <option value="Voiture">Voiture</option>
-            <option value="Petit bus">Petit bus</option>
-            {% for m in models %}
-                {% if m.model not in ['4x4', 'Normal', 'Bus', 'Voiture', 'Petit bus'] %}
-                    <option value="{{ m.model }}">{{ m.model }}</option>
-                {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
+        <h2 class="mb-0 text-success"><i class="bi bi-truck"></i> Liste des Voitures</h2>
+    </div>
+    <form class="row g-2 align-items-end mb-3" method="get" action="">
+        <div class="col-auto">
+            <input type="text" class="form-control" name="name" placeholder="Nom de la voiture" value="{{ filter_name }}">
+        </div>
+        <div class="col-auto">
+            <select class="form-select" name="model" onchange="this.form.submit()">
+                <option value="">Modèle</option>
+                {% for model in models %}
+                    <option value="{{ model.model }}" {% if filter_model == model.model %}selected{% endif %}>{{ model.model }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-outline-primary"><i class="bi bi-search"></i> Rechercher</button>
+        </div>
+        <div class="col-auto">
+            <a href="/car" class="btn btn-outline-secondary">Réinitialiser</a>
+        </div>
+    </form>
+    <div class="collapse mb-3" id="addCarForm">
+        <form action="/car/add" method="POST" class="border rounded p-3 bg-light">
+            <div class="form-group mb-2">
+                <label for="model_select">Modèle du véhicule</label>
+                <select class="form-control" id="model_select" name="model">
+                    <option value="">-- Sélectionner un modèle --</option>
+                    <option value="4x4">4x4</option>
+                    <option value="Normal">Normal</option>
+                    <option value="Bus">Bus</option>
+                    <option value="Voiture">Voiture</option>
+                    <option value="Petit bus">Petit bus</option>
+                    {% for m in models %}
+                        {% if m.model not in ['4x4', 'Normal', 'Bus', 'Voiture', 'Petit bus'] %}
+                            <option value="{{ m.model }}">{{ m.model }}</option>
+                        {% endif %}
+                    {% endfor %}
+                    <option value="autre">Autre...</option>
+                </select>
+                <input type="text" class="form-control mt-2" id="model_input" name="model_custom" placeholder="Entrer un nouveau modèle" style="display:none;">
+            </div>
+            <div class="form-group mb-2">
+                <label for="name">Nom du véhicule</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
+            <div class="form-group mb-2">
+                <label for="car_type">Type de voiture</label>
+                <input type="text" class="form-control" id="car_type" name="car_type" required>
+            </div>
+            <div class="form-group mb-2">
+                <label for="brand">Marque</label>
+                <input type="text" class="form-control" id="brand" name="brand" required>
+            </div>
+            <div class="form-group mb-2">
+                <label for="license_plate">Plaque d'immatriculation</label>
+                <input type="text" class="form-control" id="license_plate" name="license_plate" required>
+            </div>
+            <div class="form-group mb-2">
+                <label for="average_cost_per_day">Coût moyen par jour (MAD)</label>
+                <input type="number" class="form-control" id="average_cost_per_day" name="average_cost_per_day" required>
+            </div>
+            <div class="form-group mb-2">
+                <label for="available_count">Nombre disponible</label>
+                <input type="number" class="form-control" id="available_count" name="available_count" required>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Ajouter</button>
+            <button type="button" class="btn btn-secondary ms-2 cancel-add-car-btn" data-bs-toggle="collapse" data-bs-target="#addCarForm"><i class="bi bi-x-circle"></i> Annuler</button>
+        </form>
+    </div>
+    
+    <table class="table">
+        <thead class="table-success">
+            <tr>
+                <th>Nom</th>
+                <th>Type</th>
+                <th>Marque</th>
+                <th>Plaque</th>
+                <th>Coût/Jour (MAD)</th>
+                <th>Disponibles</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for car in cars %}
+            <tr>
+                <td>{{ car.name }}</td>
+                <td>{{ car.model }}</td>
+                <td>{{ car.car_type }}</td>
+                <td>{{ car.brand }}</td>
+                <td>{{ car.license_plate }}</td>
+                <td>{{ available_today[car.id] if available_today and car.id in available_today else car.available_count }}</td>
+                <td>
+                    <div class="d-flex flex-column gap-2">
+                        <div class="d-flex gap-2">
+                            <a href="/car/{{ car.id }}" class="btn btn-info rounded-3" title="Détail"><i class="bi bi-info-circle"></i></a>
+                            {% if session.get('role') in ['admin', 'car'] %}
+                                <button class="btn btn-primary rounded-3 edit-car-btn" type="button" data-bs-toggle="collapse" data-bs-target="#editCarForm{{ car.id }}" aria-expanded="false" aria-controls="editCarForm{{ car.id }}" title="Modifier"><i class="bi bi-pencil"></i></button>
+                                {% if session.get('role') == 'admin' %}
+                                    <form action="/car/delete/{{ car.id }}" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn btn-danger rounded-3" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette voiture ?');" title="Supprimer">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr class="collapse" id="editCarForm{{ car.id }}">
+                <td colspan="7">
+                    <form action="/car/edit/{{ car.id }}" method="POST" class="border rounded p-3 bg-light">
+                        <div class="form-group mb-2">
+                            <label for="model{{ car.id }}">Modèle</label>
+                            <select class="form-control" id="model{{ car.id }}" name="model" required>
+                                <option value="">-- Sélectionner un modèle --</option>
+                                <option value="4x4" {% if car.model == '4x4' %}selected{% endif %}>4x4</option>
+                                <option value="Normal" {% if car.model == 'Normal' %}selected{% endif %}>Normal</option>
+                                <option value="Bus" {% if car.model == 'Bus' %}selected{% endif %}>Bus</option>
+                                <option value="Voiture" {% if car.model == 'Voiture' %}selected{% endif %}>Voiture</option>
+                                <option value="Petit bus" {% if car.model == 'Petit bus' %}selected{% endif %}>Petit bus</option>
+                                {% for m in models %}
+                                    {% if m.model not in ['4x4', 'Normal', 'Bus', 'Voiture', 'Petit bus'] %}
+                                        <option value="{{ m.model }}" {% if car.model == m.model %}selected{% endif %}>{{ m.model }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                                <option value="autre">Autre...</option>
+                            </select>
+                            <input type="text" class="form-control mt-2" id="model_input{{ car.id }}" name="model_custom" placeholder="Entrer un nouveau modèle" style="display:none;">
+                        </div>
+                        <div class="form-group mb-2">
+                            <label for="name{{ car.id }}">Nom</label>
+                            <input type="text" class="form-control" id="name{{ car.id }}" name="name" value="{{ car.name }}" required>
+                        </div>
+                        <div class="form-group mb-2">
+                            <label for="car_type{{ car.id }}">Type</label>
+                            <input type="text" class="form-control" id="car_type{{ car.id }}" name="car_type" value="{{ car.car_type }}" required>
+                        </div>
+                        <div class="form-group mb-2">
+                            <label for="brand{{ car.id }}">Marque</label>
+                            <input type="text" class="form-control" id="brand{{ car.id }}" name="brand" value="{{ car.brand }}" required>
+                        </div>
+                        <div class="form-group mb-2">
+                            <label for="license_plate{{ car.id }}">Plaque d'immatriculation</label>
+                            <input type="text" class="form-control" id="license_plate{{ car.id }}" name="license_plate" value="{{ car.license_plate }}" required>
+                        </div>
+                        <div class="form-group mb-2">
+                            <label for="average_cost_per_day{{ car.id }}">Coût moyen par jour (MAD)</label>
+                            <input type="number" class="form-control" id="average_cost_per_day{{ car.id }}" name="average_cost_per_day" value="{{ car.average_cost_per_day }}" required>
+                        </div>
+                        <div class="form-group mb-2">
+                            <label for="available_count{{ car.id }}">Nombre disponible</label>
+                            <input type="number" class="form-control" id="available_count{{ car.id }}" name="available_count" value="{{ car.available_count }}" required>
+                        </div>
+                        <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> Enregistrer</button>
+                        <button type="button" class="btn btn-secondary ms-2 cancel-edit-car-btn" data-bs-toggle="collapse" data-bs-target="#editCarForm{{ car.id }}"><i class="bi bi-x-circle"></i> Annuler</button>
+                    </form>
+                </td>
+            </tr>
             {% endfor %}
-            <option value="autre">Autre...</option>
-        </select>
-        <input type="text" class="form-control mt-2" id="model_input" name="model_custom" placeholder="Entrer un nouveau modèle" style="display:none;">
-    </div>
-    <div class="form-group">
-        <label for="name">Nom du véhicule</label>
-        <input type="text" class="form-control" id="name" name="name" required>
-    </div>
-    <div class="form-group">
-        <label for="car_type">Type de voiture</label>
-        <input type="text" class="form-control" id="car_type" name="car_type" required>
-    </div>
-    <div class="form-group">
-        <label for="brand">Marque</label>
-        <input type="text" class="form-control" id="brand" name="brand" required>
-    </div>
-    <div class="form-group">
-        <label for="license_plate">Plaque d'immatriculation</label>
-        <input type="text" class="form-control" id="license_plate" name="license_plate" required>
-    </div>
-    <div class="form-group">
-        <label for="average_cost_per_day">Coût moyen par jour </label>
-        <input type="number" class="form-control" id="average_cost_per_day" name="average_cost_per_day" required>
-    </div>
-    <div class="form-group">
-        <label for="available_count">Nombre disponible</label>
-        <input type="number" class="form-control" id="available_count" name="available_count" required>
-    </div>
-    <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Ajouter</button>
-    <button type="button" class="btn btn-secondary ms-2 cancel-add-car-btn" data-bs-toggle="collapse" data-bs-target="#addCarForm"><i class="bi bi-x-circle"></i> Annuler</button>
-  </form>
+        </tbody>
+    </table>
 </div>
-<form method="get" class="row g-2 mb-3 align-items-end" id="carFilterForm">
-  <div class="col-md-3">
-    <label for="filter_name" class="form-label">Nom</label>
-    <input type="text" id="filter_name" name="name" class="form-control" placeholder="Rechercher par nom" value="{{ filter_name|default('') }}">
-  </div>
-  <div class="col-md-2">
-    <label for="filter_model" class="form-label">Modèle</label>
-    <select id="filter_model" name="model" class="form-control">
-      <option value="">Tous</option>
-      <option value="4x4" {% if filter_model == '4x4' %}selected{% endif %}>4x4</option>
-      <option value="Normal" {% if filter_model == 'Normal' %}selected{% endif %}>Normal</option>
-      <option value="Bus" {% if filter_model == 'Bus' %}selected{% endif %}>Bus</option>
-      <option value="Voiture" {% if filter_model == 'Voiture' %}selected{% endif %}>Voiture</option>
-      <option value="Petit bus" {% if filter_model == 'Petit bus' %}selected{% endif %}>Petit bus</option>
-    </select>
-  </div>
-  <div class="col-md-2">
-    <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-search"></i> Filtrer</button>
-  </div>
-  <div class="col-md-3">
-    <a href="/car" class="btn btn-outline-secondary w-100 px-5">Réinitialiser</a>
-  </div>
-</form>
-<table class="table">
-    <thead>
-        <tr>
-            <th>Nom</th>
-            <th>Type</th>
-            <th>Marque</th>
-            <th>Plaque</th>
-            <th>Coût/Jour (MAD)</th>
-            <th>Disponibles</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for car in cars %}
-        <tr>
-            <td>{{ car.name }}</td>
-            <td>{{ car.model }}</td>
-            <td>{{ car.car_type }}</td>
-            <td>{{ car.brand }}</td>
-            <td>{{ car.license_plate }}</td>
-            <td>{{ car.average_cost_per_day }}</td>
-            <td>{{ available_today[car.id] if available_today and car.id in available_today else car.available_count }}</td>
-            <td>
-                {% if session.get('role') in ['admin', 'car'] %}
-                    <button class="btn btn-primary btn-sm edit-car-btn" type="button" data-bs-toggle="collapse" data-bs-target="#editCarForm{{ car.id }}" aria-expanded="false" aria-controls="editCarForm{{ car.id }}"><i class="bi bi-pencil"></i></button>
-                    {% if session.get('role') == 'admin' %}
-                        <form action="/car/delete/{{ car.id }}" method="POST" style="display:inline;">
-                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette voiture ?');">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </form>
-                    {% endif %}
-                {% endif %}
-                <a href="/car/{{ car.id }}" class="btn btn-info btn-sm"><i class="bi bi-info-circle"></i></a>
-            </td>
-        </tr>
-        <tr class="collapse" id="editCarForm{{ car.id }}">
-            <td colspan="7">
-                <form action="/car/edit/{{ car.id }}" method="POST" class="border rounded p-3 bg-light">
-                    <div class="form-group">
-                        <label for="name{{ car.id }}">Nom du véhicule</label>
-                        <input type="text" class="form-control" id="name{{ car.id }}" name="name" value="{{ car.name }}" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="model{{ car.id }}">Modèle du véhicule</label>
-                        <input type="text" class="form-control" id="model{{ car.id }}" name="model" value="{{ car.model }}" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="car_type{{ car.id }}">Type de voiture</label>
-                        <input type="text" class="form-control" id="car_type{{ car.id }}" name="car_type" value="{{ car.car_type }}" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="brand{{ car.id }}">Marque</label>
-                        <input type="text" class="form-control" id="brand{{ car.id }}" name="brand" value="{{ car.brand }}" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="license_plate{{ car.id }}">Plaque d'immatriculation</label>
-                        <input type="text" class="form-control" id="license_plate{{ car.id }}" name="license_plate" value="{{ car.license_plate }}" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="average_cost_per_day{{ car.id }}">Coût moyen par jour</label>
-                        <input type="number" class="form-control" id="average_cost_per_day{{ car.id }}" name="average_cost_per_day" value="{{ car.average_cost_per_day }}" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="available_count{{ car.id }}">Nombre disponible</label>
-                        <input type="number" class="form-control" id="available_count{{ car.id }}" name="available_count" value="{{ car.available_count }}" required>
-                    </div>
-                    <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> Enregistrer</button>
-                    <button type="button" class="btn btn-secondary ms-2 cancel-edit-car-btn" data-bs-toggle="collapse" data-bs-target="#editCarForm{{ car.id }}"><i class="bi bi-x-circle"></i> Annuler</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-<div class="mb-3">
-    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#importCarModal"><i class="bi bi-upload"></i> Importer voitures (XLSX)</button>
-</div>
+
 <!-- Import Modal -->
 <div class="modal fade" id="importCarModal" tabindex="-1" aria-labelledby="importCarModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form method="post" action="/car/import/xlsx" enctype="multipart/form-data">
-        <div class="modal-header">
-          <h5 class="modal-title" id="importCarModalLabel">Importer voitures (XLSX)</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="/car/import/xlsx" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="importCarModalLabel">Importer voitures (XLSX)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Fichier XLSX</label>
+                        <input type="file" class="form-control" id="file" name="file" accept=".xlsx" required>
+                        <a href="/car/sample/xlsx" class="btn btn-link mt-1">Télécharger un modèle XLSX</a>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Importer</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                </div>
+            </form>
         </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label for="file" class="form-label">Fichier XLSX</label>
-            <input type="file" class="form-control" id="file" name="file" accept=".xlsx" required>
-            <a href="/car/sample/xlsx" class="btn btn-link mt-1">Télécharger un modèle XLSX</a>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">Importer</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-        </div>
-      </form>
     </div>
-  </div>
 </div>
+
+
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Only one add/edit form open at a time
-    function closeAllCarForms(except) {
-        document.querySelectorAll('.collapse').forEach(collapse => {
-            if ('#' + collapse.id !== except) {
-                collapse.classList.remove('show');
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle model selection for add form
+        const modelSelect = document.getElementById('model_select');
+        const modelInput = document.getElementById('model_input');
+        if (modelSelect) {
+            modelSelect.addEventListener('change', function() {
+                modelInput.style.display = this.value === 'autre' ? 'block' : 'none';
+                if (this.value !== 'autre') {
+                    modelInput.value = '';
+                }
+            });
+        }
+
+        // Handle model selection for edit forms
+        document.querySelectorAll('[id^="model"]').forEach(function(select) {
+            if (select.id !== 'model_select') {
+                const carId = select.id.replace('model', '');
+                const modelInput = document.getElementById('model_input' + carId);
+                if (modelInput) {
+                    select.addEventListener('change', function() {
+                        modelInput.style.display = this.value === 'autre' ? 'block' : 'none';
+                        if (this.value !== 'autre') {
+                            modelInput.value = '';
+                        }
+                    });
+                }
             }
         });
-    }
-    document.querySelectorAll('.add-car-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            closeAllCarForms('#addCarForm');
+
+        // Script to handle collapsible forms when buttons are clicked
+        document.querySelectorAll('.add-car-btn, .cancel-add-car-btn, .edit-car-btn, .cancel-edit-car-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                // Close other open collapsible forms (edit forms only)
+                document.querySelectorAll('.collapse.show').forEach(function(openCollapse) {
+                    // Check if the open collapse is an edit form (has an ID starting with editCarForm)
+                    if (openCollapse.id.startsWith('editCarForm')) {
+                        // Check if the clicked button is not the cancel button for this specific edit form
+                        if (!button.classList.contains('cancel-edit-car-btn') || button.dataset.bsTarget !== '#' + openCollapse.id) {
+                            var collapseInstance = bootstrap.Collapse.getInstance(openCollapse);
+                            if (collapseInstance) {
+                                collapseInstance.hide();
+                            } else {
+                                // If instance not found, manually remove the show class and add collapsing class for animation
+                                openCollapse.classList.remove('show');
+                                openCollapse.classList.add('collapsing');
+                                // Timeout to remove collapsing class after animation (approx 350ms for Bootstrap 5)
+                                setTimeout(function() {
+                                    openCollapse.classList.remove('collapsing');
+                                }, 350);
+                            }
+                        }
+                    } else if (openCollapse.id === 'addCarForm') { // Handle add form collapse
+                        if (!button.classList.contains('cancel-add-car-btn')) {
+                            var collapseInstance = bootstrap.Collapse.getInstance(openCollapse);
+                            if (collapseInstance) {
+                                collapseInstance.hide();
+                            } else {
+                                // If instance not found, manually remove the show class and add collapsing class for animation
+                                openCollapse.classList.remove('show');
+                                openCollapse.classList.add('collapsing');
+                                setTimeout(function() {
+                                    openCollapse.classList.remove('collapsing');
+                                }, 350);
+                            }
+                        }
+                    }
+                });
+            });
         });
     });
-    document.querySelectorAll('.edit-car-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const target = btn.getAttribute('data-bs-target');
-            closeAllCarForms(target);
-        });
-    });
-    document.querySelectorAll('.cancel-add-car-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelector('#addCarForm').classList.remove('show');
-        });
-    });
-    document.querySelectorAll('.cancel-edit-car-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const target = btn.getAttribute('data-bs-target');
-            document.querySelector(target).classList.remove('show');
-        });
-    });
-    // Add car model input toggle
-    const modelSelect = document.getElementById('model_select');
-    const modelInput = document.getElementById('model_input');
-    if (modelSelect && modelInput) {
-        modelSelect.addEventListener('change', function() {
-            if (this.value === 'autre') {
-                modelInput.style.display = 'block';
-                modelInput.required = true;
-            } else {
-                modelInput.style.display = 'none';
-                modelInput.required = false;
-            }
-        });
-    }
-    // Auto-submit on model change
-    document.getElementById('filter_model').addEventListener('change', function() {
-        document.getElementById('carFilterForm').submit();
-    });
-    // Auto-submit on name input (with debounce)
-    let nameInput = document.getElementById('filter_name');
-    let debounceTimeout;
-    nameInput.addEventListener('input', function() {
-        clearTimeout(debounceTimeout);
-        debounceTimeout = setTimeout(function() {
-            document.getElementById('carFilterForm').submit();
-        }, 500);
-    });
-});
 </script>
 {% endblock %}

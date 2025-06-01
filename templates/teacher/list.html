@@ -2,168 +2,220 @@
 
 {% block title %}Liste des Enseignants{% endblock %}
 
-{% block content %}
-<h2 class="mb-0 text-success"><i class="bi bi-person-lines-fill"></i> Liste des Enseignants</h2>
-<div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+{% block sidebar %}
+<div class="d-flex flex-column gap-3" style="margin-top: 185px;">
     {% if session.get('role') in ['admin', 'teacher'] %}
-        <button class="btn btn-success add-teacher-btn" type="button" data-bs-toggle="collapse" data-bs-target="#addTeacherForm" aria-expanded="false" aria-controls="addTeacherForm"><i class="bi bi-plus-circle"></i> Ajouter un Enseignant</button>
+        <button class="btn btn-success w-100 add-teacher-btn" type="button" data-bs-toggle="collapse" data-bs-target="#addTeacherForm" aria-expanded="false" aria-controls="addTeacherForm">
+            <i class="bi bi-plus-circle"></i> Ajouter un Enseignant
+        </button>
+        <button class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#importTeacherModal">
+            <i class="bi bi-upload"></i> Importer enseignants (XLSX)
+        </button>
     {% endif %}
-    <a href="/teacher/export/pdf" class="btn btn-outline-danger"><i class="bi bi-file-earmark-pdf"></i> Exporter PDF</a>
-    <a href="/teacher/export/xlsx" class="btn btn-outline-success"><i class="bi bi-file-earmark-excel"></i> Exporter XLSX</a>
-    <a href="/teacher/sample/xlsx" class="btn btn-outline-secondary"><i class="bi bi-download"></i> Télécharger modèle import XLSX</a>
-    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#importTeacherModal"><i class="bi bi-upload"></i> Importer enseignants XLSX</button>
+    <a href="/teacher/export/pdf" class="btn btn-outline-danger w-100">
+        <i class="bi bi-file-earmark-pdf"></i> Exporter PDF
+    </a>
+    <a href="/teacher/export/xlsx" class="btn btn-outline-success w-100">
+        <i class="bi bi-file-earmark-excel"></i> Exporter XLSX
+    </a>
 </div>
-<form class="row g-2 align-items-end mb-3" method="get" action="">
-    <div class="col-auto">
-        <input type="text" class="form-control" name="name" placeholder="Nom de l'enseignant" value="{{ filter_name }}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
+        <h2 class="mb-0 text-success"><i class="bi bi-person-lines-fill"></i> Liste des Enseignants</h2>
     </div>
-    <div class="col-auto">
-        <select class="form-select" name="department_id" onchange="this.form.submit()">
-            <option value="">Département</option>
-            {% for department in departments %}
-                <option value="{{ department.id }}" {% if filter_department_id == department.id|string %}selected{% endif %}>{{ department.name }}</option>
+
+    <div class="collapse mb-3" id="addTeacherForm">
+        <form method="POST" action="/teacher/add" class="border rounded p-3 bg-light">
+            <div class="mb-3">
+                <label for="first_name">Prénom</label>
+                <input type="text" id="first_name" name="first_name" class="form-control" required value="{{ form_first_name|default('') }}">
+            </div>
+            <div class="mb-3">
+                <label for="last_name">Nom</label>
+                <input type="text" id="last_name" name="last_name" class="form-control" required value="{{ form_last_name|default('') }}">
+            </div>
+            <div class="mb-3">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" class="form-control" required value="{{ form_email|default('') }}">
+            </div>
+            <div class="mb-3">
+                <label for="phone">Téléphone</label>
+                <input type="text" id="phone" name="phone" class="form-control" required value="{{ form_phone|default('') }}">
+            </div>
+            <div class="mb-3">
+                <label for="department">Département</label>
+                <select id="department" name="department" class="form-control" required>
+                    {% for department in departments %}
+                        <option value="{{ department.id }}" {% if form_department_id|default('') == department.id|string %}selected{% endif %}>{{ department.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Ajouter</button>
+            <button type="button" class="btn btn-secondary ms-2 cancel-add-teacher-btn" data-bs-toggle="collapse" data-bs-target="#addTeacherForm"><i class="bi bi-x-circle"></i> Annuler</button>
+        </form>
+    </div>
+
+    <form class="row g-2 align-items-end mb-3" method="get" action="">
+        <div class="col-auto">
+            <input type="text" class="form-control" name="name" placeholder="Nom de l'enseignant" value="{{ filter_name }}">
+        </div>
+        <div class="col-auto">
+            <select class="form-select" name="department_id" onchange="this.form.submit()">
+                <option value="">Département</option>
+                {% for department in departments %}
+                    <option value="{{ department.id }}" {% if filter_department_id == department.id|string %}selected{% endif %}>{{ department.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-outline-primary"><i class="bi bi-search"></i> Rechercher</button>
+        </div>
+        <div class="col-auto">
+            <a href="/teacher" class="btn btn-outline-secondary">Réinitialiser</a>
+        </div>
+    </form>
+    <table class="table">
+        <thead class="table-success">
+            <tr>
+                <th>Nom</th>
+                <th>Département</th>
+                <th>Email</th>
+                <th>Téléphone</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for teacher in teachers %}
+            <tr>
+                <td>{{ teacher.first_name }} {{ teacher.last_name }}</td>
+                <td>{{ teacher.department_name }}</td>
+                <td>{{ teacher.email }}</td>
+                <td>{{ teacher.phone }}</td>
+                <td>
+                    <div class="d-flex flex-column gap-2">
+                        <div class="d-flex gap-2">
+                            <a href="/teacher/{{ teacher.id }}" class="btn btn-info rounded-3" title="Détail"><i class="bi bi-info-circle"></i></a>
+                            {% if session.get('role') in ['admin', 'teacher'] %}
+                                <button class="btn btn-primary rounded-3 edit-teacher-btn" type="button" data-bs-toggle="collapse" data-bs-target="#editTeacherForm{{ teacher.id }}" aria-expanded="false" aria-controls="editTeacherForm{{ teacher.id }}" title="Modifier"><i class="bi bi-pencil"></i></button>
+                                {% if session.get('role') == 'admin' %}
+                                    <form action="/teacher/delete/{{ teacher.id }}" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn btn-danger rounded-3" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet enseignant ?');" title="Supprimer">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr class="collapse" id="editTeacherForm{{ teacher.id }}">
+                <td colspan="5">
+                    <form method="POST" action="/teacher/edit/{{ teacher.id }}" class="border rounded p-3 bg-light">
+                        <div class="mb-3">
+                            <label for="first_name{{ teacher.id }}">Prénom</label>
+                            <input type="text" id="first_name{{ teacher.id }}" name="first_name" class="form-control" value="{{ teacher.first_name }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="last_name{{ teacher.id }}">Nom</label>
+                            <input type="text" id="last_name{{ teacher.id }}" name="last_name" class="form-control" value="{{ teacher.last_name }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email{{ teacher.id }}">Email</label>
+                            <input type="email" id="email{{ teacher.id }}" name="email" class="form-control" value="{{ teacher.email }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone{{ teacher.id }}">Téléphone</label>
+                            <input type="text" id="phone{{ teacher.id }}" name="phone" class="form-control" value="{{ teacher.phone }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="department{{ teacher.id }}">Département</label>
+                            <select id="department{{ teacher.id }}" name="department" class="form-control" required>
+                                {% for department in departments %}
+                                    <option value="{{ department.id }}" {% if department.id == teacher.department_id %}selected{% endif %}>{{ department.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> Enregistrer</button>
+                        <button type="button" class="btn btn-secondary ms-2 cancel-edit-teacher-btn" data-bs-toggle="collapse" data-bs-target="#editTeacherForm{{ teacher.id }}"><i class="bi bi-x-circle"></i> Annuler</button>
+                    </form>
+                </td>
+            </tr>
             {% endfor %}
-        </select>
-    </div>
-    <div class="col-auto">
-        <button type="submit" class="btn btn-outline-primary"><i class="bi bi-search"></i> Rechercher</button>
-    </div>
-    <div class="col-auto">
-        <a href="/teacher" class="btn btn-outline-secondary">Réinitialiser</a>
-    </div>
-</form>
+        </tbody>
+    </table>
+</div>
+
 <!-- Import Modal -->
 <div class="modal fade" id="importTeacherModal" tabindex="-1" aria-labelledby="importTeacherModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form method="post" action="/teacher/import/xlsx" enctype="multipart/form-data">
-        <div class="modal-header">
-          <h5 class="modal-title" id="importTeacherModalLabel">Importer enseignants (XLSX)</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="/teacher/import/xlsx" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="importTeacherModalLabel">Importer enseignants (XLSX)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Fichier XLSX</label>
+                        <input type="file" class="form-control" id="file" name="file" accept=".xlsx" required>
+                        <a href="/teacher/sample/xlsx" class="btn btn-link mt-1">Télécharger un modèle XLSX</a>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Importer</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                </div>
+            </form>
         </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label for="file" class="form-label">Fichier XLSX</label>
-            <input type="file" class="form-control" id="file" name="file" accept=".xlsx" required>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">Importer</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-        </div>
-      </form>
     </div>
-  </div>
-</div><div class="collapse mb-3" id="addTeacherForm">
-  <form method="POST" action="/teacher/add" class="border rounded p-3 bg-light">
-    <div class="mb-3">
-      <label for="first_name">Prénom</label>
-      <input type="text" id="first_name" name="first_name" class="form-control" required value="{{ form_first_name|default('') }}">
-    </div>
-    <div class="mb-3">
-      <label for="last_name">Nom</label>
-      <input type="text" id="last_name" name="last_name" class="form-control" required value="{{ form_last_name|default('') }}">
-    </div>
-    <div class="mb-3">
-      <label for="email">Email</label>
-      <input type="email" id="email" name="email" class="form-control" required value="{{ form_email|default('') }}">
-    </div>
-    <div class="mb-3">
-      <label for="phone">Téléphone</label>
-      <input type="text" id="phone" name="phone" class="form-control" required value="{{ form_phone|default('') }}">
-    </div>
-    <div class="mb-3">
-      <label for="department">Département</label>
-      <select id="department" name="department" class="form-control" required>
-        {% for department in departments %}
-          <option value="{{ department.id }}" {% if form_department_id|default('') == department.id|string %}selected{% endif %}>{{ department.name }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Ajouter</button>
-    <button type="button" class="btn btn-secondary ms-2 cancel-add-teacher-btn" data-bs-toggle="collapse" data-bs-target="#addTeacherForm"><i class="bi bi-x-circle"></i> Annuler</button>
-  </form>
 </div>
-<table class="table">
-    <thead class="table-success">
-        <tr>
-            <th>Nom</th>
-            <th>Département</th>
-            <th>Email</th>
-            <th>Téléphone</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for teacher in teachers %}
-        <tr>
-            <td>{{ teacher.first_name }} {{ teacher.last_name }}</td>
-            <td>{{ teacher.department_name }}</td>
-            <td>{{ teacher.email }}</td>
-            <td>{{ teacher.phone }}</td>
-            <td>
-                {% if session.get('role') in ['admin', 'teacher'] %}
-                    <button class="btn btn-primary btn-sm edit-teacher-btn" type="button" data-bs-toggle="collapse" data-bs-target="#editTeacherForm{{ teacher.id }}" aria-expanded="false" aria-controls="editTeacherForm{{ teacher.id }}"><i class="bi bi-pencil"></i></button>
-                    {% if session.get('role') == 'admin' %}
-                        <form action="/teacher/delete/{{ teacher.id }}" method="POST" style="display:inline;">
-                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet enseignant ?');">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </form>
-                    {% endif %}
-                {% endif %}
-                <a href="/teacher/{{ teacher.id }}" class="btn btn-info btn-sm"><i class="bi bi-info-circle"></i></a>
-            </td>
-        </tr>
-        <tr class="collapse" id="editTeacherForm{{ teacher.id }}">
-            <td colspan="5">
-                <form method="POST" action="/teacher/edit/{{ teacher.id }}" class="border rounded p-3 bg-light">
-                  <div class="mb-3">
-                    <label for="first_name{{ teacher.id }}">Prénom</label>
-                    <input type="text" id="first_name{{ teacher.id }}" name="first_name" class="form-control" value="{{ teacher.first_name }}" required>
-                  </div>
-                  <div class="mb-3">
-                    <label for="last_name{{ teacher.id }}">Nom</label>
-                    <input type="text" id="last_name{{ teacher.id }}" name="last_name" class="form-control" value="{{ teacher.last_name }}" required>
-                  </div>
-                  <div class="mb-3">
-                    <label for="email{{ teacher.id }}">Email</label>
-                    <input type="email" id="email{{ teacher.id }}" name="email" class="form-control" value="{{ teacher.email }}" required>
-                  </div>
-                  <div class="mb-3">
-                    <label for="phone{{ teacher.id }}">Téléphone</label>
-                    <input type="text" id="phone{{ teacher.id }}" name="phone" class="form-control" value="{{ teacher.phone }}" required>
-                  </div>
-                  <div class="mb-3">
-                    <label for="department{{ teacher.id }}">Département</label>
-                    <select id="department{{ teacher.id }}" name="department" class="form-control" required>
-                      {% for department in departments %}
-                        <option value="{{ department.id }}" {% if department.id == teacher.department_id %}selected{% endif %}>{{ department.name }}</option>
-                      {% endfor %}
-                    </select>
-                  </div>
-                  <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> Enregistrer</button>
-                  <button type="button" class="btn btn-secondary ms-2 cancel-edit-teacher-btn" data-bs-toggle="collapse" data-bs-target="#editTeacherForm{{ teacher.id }}"><i class="bi bi-x-circle"></i> Annuler</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-<!-- Bootstrap 5 JS for collapse -->
+
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Only one edit form open at a time
-    document.querySelectorAll('.edit-teacher-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            var target = btn.getAttribute('data-bs-target');
-            document.querySelectorAll('.collapse').forEach(function(collapse) {
-                if ('#' + collapse.id !== target) {
-                    collapse.classList.remove('show');
-                }
+    document.addEventListener('DOMContentLoaded', function() {
+        // Script to handle collapsible forms when buttons are clicked
+        document.querySelectorAll('.add-teacher-btn, .cancel-add-teacher-btn, .edit-teacher-btn, .cancel-edit-teacher-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                // Close other open collapsible forms (edit forms only)
+                document.querySelectorAll('.collapse.show').forEach(function(openCollapse) {
+                    // Check if the open collapse is an edit form (has an ID starting with editTeacherForm)
+                    if (openCollapse.id.startsWith('editTeacherForm')) {
+                        // Check if the clicked button is not the cancel button for this specific edit form
+                        if (!button.classList.contains('cancel-edit-teacher-btn') || button.dataset.bsTarget !== '#' + openCollapse.id) {
+                            var collapseInstance = bootstrap.Collapse.getInstance(openCollapse);
+                            if (collapseInstance) {
+                                collapseInstance.hide();
+                            } else {
+                                // If instance not found, manually remove the show class and add collapsing class for animation
+                                openCollapse.classList.remove('show');
+                                openCollapse.classList.add('collapsing');
+                                // Timeout to remove collapsing class after animation (approx 350ms for Bootstrap 5)
+                                setTimeout(function() {
+                                    openCollapse.classList.remove('collapsing');
+                                }, 350);
+                            }
+                        }
+                    } else if (openCollapse.id === 'addTeacherForm') { // Handle add form collapse
+                        if (!button.classList.contains('cancel-add-teacher-btn')) {
+                            var collapseInstance = bootstrap.Collapse.getInstance(openCollapse);
+                            if (collapseInstance) {
+                                collapseInstance.hide();
+                            } else {
+                                // If instance not found, manually remove the show class and add collapsing class for animation
+                                openCollapse.classList.remove('show');
+                                openCollapse.classList.add('collapsing');
+                                setTimeout(function() {
+                                    openCollapse.classList.remove('collapsing');
+                                }, 350);
+                            }
+                        }
+                    }
+                });
             });
         });
     });
-});
 </script>
 {% endblock %}

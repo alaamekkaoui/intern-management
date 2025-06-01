@@ -121,42 +121,73 @@ def create_all_tables():
 
 def insert_dummy_data():
     try:
-        # Insert dummy users using add_user method
-        User.add_user('teacher', 'teacher', 'teacher')
-        User.add_dummy_car_user()
-        # Insert dummy departments
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO departments (name) VALUES
-            ('Computer Science'),
-            ('Mathematics')
-        """)
-        # Insert dummy teachers
-        cursor.execute("""
-            INSERT INTO teachers (first_name, last_name, email, phone, department_id) VALUES
-            ('Alice', 'Smith', 'alice.smith@example.com', '1234567890', 1),
-            ('Bob', 'Johnson', 'bob.johnson@example.com', '0987654321', 2)
-        """)
-        # Insert dummy cars
+
+        # 1. Insert dummy users
+        User.add_user('teacher', 'teacher', 'teacher')
+        User.add_dummy_car_user()
+
+        # 2. Insert dummy cars
         cursor.execute("""
             INSERT INTO cars (name, model, car_type, brand, license_plate, average_cost_per_day, available_count) VALUES
-            ('Car A', '4x4', 'SUV', 'Toyota', 'ABC-123', 50.00, 2),
-            ('Car B', 'Bus', 'Minibus', 'Mercedes', 'XYZ-789', 120.00, 1)
-        """)
-        # Insert dummy intern types
-        cursor.execute("""
-            INSERT INTO intern_types (name) VALUES
-            ('Research'),
-            ('Fieldwork')
-        """)
-        # Insert dummy internships
-        cursor.execute("""
-            INSERT INTO internships (title, start_date, end_date, teacher_id, car_id, intern_type_id, status, num_ordre_mission, description, destination, kilometrage) VALUES
-            ('AI Research', '2024-07-01', '2024-08-01', 1, 1, 1, 'pending', 'ORD-001', 'Recherche sur l\'IA appliquée', 'Rabat', 120),
-            ('Math Fieldwork', '2024-07-15', '2024-08-15', 2, NULL, 2, 'pending', 'ORD-002', 'Travail de terrain en mathématiques', 'Casablanca', 80)
+            ('Dacia Logan', 'Logan', 'Berline', 'Dacia', '12345-A-6', 300.00, 2),
+            ('Renault Kangoo', 'Kangoo', 'Utilitaire', 'Renault', '67890-B-6', 400.00, 1),
+            ('Peugeot Partner', 'Partner', 'Utilitaire', 'Peugeot', '24680-C-6', 350.00, 1)
         """)
         conn.commit()
+
+        # 3. Insert dummy intern types
+        cursor.execute("""
+            INSERT INTO intern_types (name) VALUES
+            ('Stage PFE'),
+            ('Stage d''été'),
+            ('Stage d''observation'),
+            ('Stage professionnel')
+        """)
+        conn.commit()
+
+        # 4. Insert dummy departments
+        cursor.execute("""
+            INSERT INTO departments (name) VALUES
+            ('Génie Informatique'),
+            ('Génie Industriel'),
+            ('Génie Civil'),
+            ('Génie Électrique'),
+            ('Génie Mécanique')
+        """)
+        conn.commit()
+
+        # 5. Insert dummy teachers
+        cursor.execute("""
+            INSERT INTO teachers (first_name, last_name, email, phone, department_id) VALUES
+            ('Mohammed', 'Alami', 'm.alami@example.com', '0612345678', 1),
+            ('Fatima', 'Benani', 'f.benani@example.com', '0698765432', 2),
+            ('Karim', 'Chraibi', 'k.chraibi@example.com', '0611223344', 3),
+            ('Amina', 'Dahmani', 'a.dahmani@example.com', '0655667788', 4)
+        """)
+        conn.commit()
+
+        # 6. Insert dummy students
+        cursor.execute("""
+            INSERT INTO students (first_name, last_name, email, phone, teacher_id) VALUES
+            ('Youssef', 'El Fathi', 'y.elfathi@example.com', '0611112222', 1),
+            ('Sara', 'Benjelloun', 's.benjelloun@example.com', '0622223333', 2),
+            ('Omar', 'Tazi', 'o.tazi@example.com', '0633334444', 3),
+            ('Laila', 'Mansouri', 'l.mansouri@example.com', '0644445555', 4)
+        """)
+        conn.commit()
+
+        # 7. Insert dummy internships
+        cursor.execute("""
+            INSERT INTO internships (title, start_date, end_date, teacher_id, car_id, intern_type_id, status, num_ordre_mission, description, destination, kilometrage) VALUES
+            ('Développement Web Full Stack', '2024-07-01', '2024-08-01', 1, 1, 1, 'pending', 'ORD-001', 'Développement d''une application web pour la gestion des stages', 'Casablanca', 120),
+            ('Optimisation des Processus Industriels', '2024-07-15', '2024-08-15', 2, 2, 2, 'pending', 'ORD-002', 'Étude et optimisation des processus de production', 'Tanger', 350),
+            ('Étude de Structures Bâtiment', '2024-08-01', '2024-09-01', 3, 3, 3, 'pending', 'ORD-003', 'Analyse des structures d''un bâtiment commercial', 'Rabat', 80),
+            ('Maintenance Électrique', '2024-08-15', '2024-09-15', 4, 1, 4, 'pending', 'ORD-004', 'Maintenance préventive des systèmes électriques', 'Marrakech', 200)
+        """)
+        conn.commit()
+
         cursor.close()
         conn.close()
         print("✅ Dummy data inserted successfully.")

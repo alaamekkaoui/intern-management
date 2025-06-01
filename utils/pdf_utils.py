@@ -18,14 +18,14 @@ def export_teachers_pdf(teachers):
     add_iav_logo(pdf)
     pdf.ln(10)
     pdf.set_font('Arial', 'B', 16)
-    pdf.cell(0, 10, 'Teachers List', ln=True, align='C')
+    pdf.cell(0, 10, 'Liste des Enseignants', ln=True, align='C')
     pdf.ln(10)
     pdf.set_font('Arial', 'B', 12)
-    pdf.cell(40, 10, 'First Name', 1)
-    pdf.cell(40, 10, 'Last Name', 1)
-    pdf.cell(60, 10, 'Email', 1)
-    pdf.cell(30, 10, 'Phone', 1)
-    pdf.cell(0, 10, 'Department', 1, ln=True)
+    pdf.cell(40, 10, 'Prénom', 1)
+    pdf.cell(40, 10, 'Nom', 1)
+    pdf.cell(60, 10, 'E-mail', 1)
+    pdf.cell(30, 10, 'Téléphone', 1)
+    pdf.cell(0, 10, 'Département', 1, ln=True)
     pdf.set_font('Arial', '', 12)
     for t in teachers:
         pdf.cell(40, 10, str(t.get('first_name', '')), 1)
@@ -55,8 +55,8 @@ def sample_teacher_xlsx():
 def export_teachers_xlsx(teachers):
     wb = Workbook()
     ws = wb.active
-    ws.title = "Teachers"
-    ws.append(["First Name", "Last Name", "Email", "Phone", "Department"])
+    ws.title = "Enseignants"
+    ws.append(["Prénom", "Nom", "E-mail", "Téléphone", "Département"])
     for t in teachers:
         ws.append([
             t.get('first_name', ''),
@@ -100,8 +100,8 @@ def import_teachers_from_xlsx(file):
 def export_internships_xlsx(internships):
     wb = Workbook()
     ws = wb.active
-    ws.title = "Internships"
-    ws.append(["Title", "Teacher", "Start Date", "End Date", "Status", "Car", "Intern Type"])
+    ws.title = "Stages"
+    ws.append(["Titre", "Enseignant", "Date de Début", "Date de Fin", "Statut", "Voiture", "Type de Stage"])
     for i in internships:
         ws.append([
             i.get('title', ''),
@@ -120,8 +120,8 @@ def export_internships_xlsx(internships):
 def export_cars_xlsx(cars):
     wb = Workbook()
     ws = wb.active
-    ws.title = "Cars"
-    ws.append(["Name", "Model", "Type", "Brand", "License Plate", "Cost/Day", "Available Count"])
+    ws.title = "Voitures"
+    ws.append(["Nom", "Modèle", "Type", "Marque", "Plaque d'Immatriculation", "Coût/Jour", "Nombre Disponible"])
     for c in cars:
         ws.append([
             c.get('name', ''),
@@ -140,8 +140,8 @@ def export_cars_xlsx(cars):
 def export_departments_xlsx(departments):
     wb = Workbook()
     ws = wb.active
-    ws.title = "Departments"
-    ws.append(["Name"])
+    ws.title = "Départements"
+    ws.append(["Nom"])
     for d in departments:
         ws.append([d.get('name', '')])
     xlsx_io = io.BytesIO()
@@ -189,10 +189,10 @@ def export_departments_pdf(departments):
     add_iav_logo(pdf)
     pdf.ln(10)
     pdf.set_font('Arial', 'B', 16)
-    pdf.cell(0, 10, 'Departments List', ln=True, align='C')
+    pdf.cell(0, 10, 'Liste des Départements', ln=True, align='C')
     pdf.ln(10)
     pdf.set_font('Arial', 'B', 12)
-    pdf.cell(0, 10, 'Name', 1, ln=True)
+    pdf.cell(0, 10, 'Nom', 1, ln=True)
     pdf.set_font('Arial', '', 12)
     for d in departments:
         pdf.cell(0, 10, d.get('name', ''), 1, ln=True)
@@ -208,27 +208,79 @@ def export_internships_pdf(internships):
     add_iav_logo(pdf)
     pdf.ln(10)
     pdf.set_font('Arial', 'B', 16)
-    pdf.cell(0, 10, 'Internships List', ln=True, align='C')
+    pdf.cell(0, 10, 'Liste des Stages', ln=True, align='C')
     pdf.ln(10)
-    pdf.set_font('Arial', 'B', 10)
-    pdf.cell(30, 10, 'Title', 1)
-    pdf.cell(40, 10, 'Teacher', 1)
-    pdf.cell(25, 10, 'Start', 1)
-    pdf.cell(25, 10, 'End', 1)
-    pdf.cell(20, 10, 'Status', 1)
-    pdf.cell(30, 10, 'Car', 1)
-    pdf.cell(0, 10, 'Type', 1, ln=True)
-    pdf.set_font('Arial', '', 10)
+
+    # Define column widths and headers
+    page_width = pdf.w - 2 * pdf.l_margin
+    col_widths = [40, 48, 18, 18, 18, 28, 18] # Total width: 188. OK.
+    col_headers = ['Titre', 'Enseignant', 'Début', 'Fin', 'Statut', 'Voiture', 'Type']
+    line_height = 5 # Base line height for content rows
+
+    pdf.set_font('Arial', 'B', 9) # Smaller font for headers
+    # Print table headers
+    for col_header, col_width in zip(col_headers, col_widths):
+        pdf.cell(col_width, 10, col_header, 1, 0, 'C')
+    pdf.ln() # Move to the next line after printing headers
+
+    pdf.set_font('Arial', '', 8) # Smaller font for content
+
+    # Print table rows
     for i in internships:
-        pdf.cell(30, 10, str(i.get('title', '')), 1)
-        pdf.cell(40, 10, f"{i.get('first_name', '')} {i.get('last_name', '')}", 1)
-        pdf.cell(25, 10, str(i.get('start_date', '')), 1)
-        pdf.cell(25, 10, str(i.get('end_date', '')), 1)
-        pdf.cell(20, 10, str(i.get('status', '')), 1)
-        pdf.cell(30, 10, str(i.get('car_model', '')), 1)
-        pdf.cell(0, 10, str(i.get('intern_type', '')), 1, ln=True)
+        row_data = [
+            str(i.get('title', '')),
+            f"{i.get('first_name', '')} {i.get('last_name', '')}",
+            str(i.get('start_date', '')),
+            str(i.get('end_date', '')),
+            str(i.get('status', '')),
+            str(i.get('car_model', '')),
+            str(i.get('intern_type', ''))
+        ]
+
+        # Calculate max height for the current row based on its content and column widths
+        max_row_height = line_height # Start with base height
+        for col_data, col_width in zip(row_data, col_widths):
+            # Temporarily set font to calculate string width accurately
+            pdf.set_font('Arial', '', 8)
+            text_width = pdf.get_string_width(col_data)
+            # Estimate lines needed, using ceil for integer division
+            lines = int(text_width / col_width) + (text_width % col_width > 0)
+            lines = max(1, lines) # Ensure at least one line
+            cell_calculated_height = lines * line_height
+            max_row_height = max(max_row_height, cell_calculated_height)
+
+        # Ensure a minimum row height (e.g., for empty cells or minimal content)
+        # Set a reasonable minimum height if content is very short or empty
+        min_row_height = line_height * 2.5 # Example: minimum height equivalent to 2.5 lines
+        max_row_height = max(min_row_height, max_row_height)
+
+        # Store the initial y position for the row
+        start_y = pdf.get_y()
+        start_x = pdf.get_x() # Store starting x for the row
+
+        # Print cells for the row
+        current_x = start_x
+        for col_data, col_width in zip(row_data, col_widths):
+            # Draw the multi-line cell content
+            # Save current position before multi_cell as it moves Y
+            before_multi_cell_y = pdf.get_y()
+            pdf.set_xy(current_x, before_multi_cell_y) # Ensure starting at current_x, current_y
+            pdf.multi_cell(col_width, line_height, col_data, border=0, align='L', fill=0)
+
+            # Draw the cell border with the calculated max_row_height
+            # After multi_cell, the cursor is below the text. Need to reset X and Y for drawing border.
+            pdf.set_xy(current_x, start_y); # Reset position to the start of the cell area
+            pdf.cell(col_width, max_row_height, '', border=1, ln=0, align='L', fill=0); # Draw border with max_row_height
+
+            # Move to the start of the next column, staying at the initial row Y level
+            current_x += col_width;
+            pdf.set_xy(current_x, start_y); # Position for the next cell's content and border start
+
+        # After printing all cells in the row, move to the next line based on the maximum row height
+        pdf.set_y(start_y + max_row_height);
+
     pdf_output = io.BytesIO()
-    pdf_bytes = pdf.output(dest='S').encode('latin1')
+    pdf_bytes = pdf.output(dest='S').encode('latin1') # Use latin1 for broader character support
     pdf_output.write(pdf_bytes)
     pdf_output.seek(0)
     return pdf_output
@@ -239,16 +291,16 @@ def export_cars_pdf(cars):
     add_iav_logo(pdf)
     pdf.ln(10)
     pdf.set_font('Arial', 'B', 16)
-    pdf.cell(0, 10, 'Cars List', ln=True, align='C')
+    pdf.cell(0, 10, 'Liste des Voitures', ln=True, align='C')
     pdf.ln(10)
     pdf.set_font('Arial', 'B', 10)
-    pdf.cell(30, 10, 'Name', 1)
-    pdf.cell(25, 10, 'Model', 1)
+    pdf.cell(30, 10, 'Nom', 1)
+    pdf.cell(25, 10, 'Modèle', 1)
     pdf.cell(25, 10, 'Type', 1)
-    pdf.cell(25, 10, 'Brand', 1)
-    pdf.cell(30, 10, 'License', 1)
-    pdf.cell(25, 10, 'Cost/Day', 1)
-    pdf.cell(0, 10, 'Available', 1, ln=True)
+    pdf.cell(25, 10, 'Marque', 1)
+    pdf.cell(30, 10, 'Plaque', 1)
+    pdf.cell(25, 10, 'Coût/Jour', 1)
+    pdf.cell(0, 10, 'Disponible', 1, ln=True)
     pdf.set_font('Arial', '', 10)
     for c in cars:
         pdf.cell(30, 10, str(c.get('name', '')), 1)
@@ -320,14 +372,14 @@ def generate_students_pdf(students):
     add_iav_logo(pdf)
     pdf.ln(10)
     pdf.set_font('Arial', 'B', 16)
-    pdf.cell(0, 10, 'Students List', ln=True, align='C')
+    pdf.cell(0, 10, 'Liste des Étudiants', ln=True, align='C')
     pdf.ln(10)
     pdf.set_font('Arial', 'B', 12)
-    pdf.cell(40, 10, 'First Name', 1)
-    pdf.cell(40, 10, 'Last Name', 1)
-    pdf.cell(60, 10, 'Email', 1)
-    pdf.cell(30, 10, 'Phone', 1)
-    pdf.cell(0, 10, 'Internship', 1, ln=True)
+    pdf.cell(40, 10, 'Prénom', 1)
+    pdf.cell(40, 10, 'Nom', 1)
+    pdf.cell(60, 10, 'E-mail', 1)
+    pdf.cell(30, 10, 'Téléphone', 1)
+    pdf.cell(0, 10, 'Stage', 1, ln=True)
     pdf.set_font('Arial', '', 12)
     for s in students:
         pdf.cell(40, 10, str(s.get('first_name', '')), 1)
@@ -343,7 +395,6 @@ def generate_students_pdf(students):
     return pdf_output
 
 def sample_student_xlsx():
-    from openpyxl import Workbook
     wb = Workbook()
     ws = wb.active
     ws.title = "Students"
@@ -355,7 +406,6 @@ def sample_student_xlsx():
     return xlsx_io
 
 def sample_car_xlsx():
-    from openpyxl import Workbook
     wb = Workbook()
     ws = wb.active
     ws.title = "Cars"
@@ -367,7 +417,6 @@ def sample_car_xlsx():
     return xlsx_io
 
 def sample_internship_xlsx():
-    from openpyxl import Workbook
     wb = Workbook()
     ws = wb.active
     ws.title = "Internships"
@@ -427,3 +476,80 @@ def import_internships_from_xlsx(file):
         except Exception as e:
             errors.append(f"Ligne {i}: Erreur lors de l'ajout du stage: {e}")
     return count, errors
+
+def export_single_internship_pdf(internship):
+    pdf = FPDF()
+    pdf.add_page()
+    add_iav_logo(pdf)
+    pdf.ln(10)
+    pdf.set_font('Arial', 'B', 16)
+    pdf.cell(0, 10, 'Détails du Stage', ln=True, align='C')
+    pdf.ln(10)
+
+    pdf.set_font('Arial', 'B', 12)
+    pdf.cell(40, 10, 'Titre:', 0)
+    pdf.set_font('Arial', '', 12)
+    pdf.multi_cell(0, 10, str(internship.get('title', '')))
+
+    pdf.set_font('Arial', 'B', 12)
+    pdf.cell(40, 10, 'Enseignant:', 0)
+    pdf.set_font('Arial', '', 12)
+    teacher_name = f"{internship.get('first_name', '')} {internship.get('last_name', '')}"
+    pdf.multi_cell(0, 10, teacher_name)
+
+    pdf.set_font('Arial', 'B', 12)
+    pdf.cell(40, 10, 'Date de Début:', 0)
+    pdf.set_font('Arial', '', 12)
+    pdf.cell(0, 10, str(internship.get('start_date', '')), ln=True)
+
+    pdf.set_font('Arial', 'B', 12)
+    pdf.cell(40, 10, 'Date de Fin:', 0)
+    pdf.set_font('Arial', '', 12)
+    pdf.cell(0, 10, str(internship.get('end_date', '')), ln=True)
+
+    pdf.set_font('Arial', 'B', 12)
+    pdf.cell(40, 10, 'Statut:', 0)
+    pdf.set_font('Arial', '', 12)
+    pdf.cell(0, 10, str(internship.get('status', '')), ln=True)
+
+    pdf.set_font('Arial', 'B', 12)
+    pdf.cell(40, 10, 'Voiture:', 0)
+    pdf.set_font('Arial', '', 12)
+    pdf.cell(0, 10, str(internship.get('car_model', '')), ln=True)
+
+    pdf.set_font('Arial', 'B', 12)
+    pdf.cell(40, 10, 'Type de Stage:', 0)
+    pdf.set_font('Arial', '', 12)
+    pdf.cell(0, 10, str(internship.get('intern_type', '')), ln=True)
+
+    # Add other details if available (num_ordre_mission, description, destination, kilometrage)
+    if internship.get('num_ordre_mission'):
+        pdf.set_font('Arial', 'B', 12)
+        pdf.cell(40, 10, 'Numéro d\'ordre de Mission:', 0)
+        pdf.set_font('Arial', '', 12)
+        pdf.cell(0, 10, str(internship.get('num_ordre_mission', '')), ln=True)
+
+    if internship.get('description'):
+        pdf.set_font('Arial', 'B', 12)
+        pdf.cell(40, 10, 'Description:', 0)
+        pdf.set_font('Arial', '', 12)
+        pdf.multi_cell(0, 10, str(internship.get('description', '')))
+
+    if internship.get('destination'):
+        pdf.set_font('Arial', 'B', 12)
+        pdf.cell(40, 10, 'Destination:', 0)
+        pdf.set_font('Arial', '', 12)
+        pdf.cell(0, 10, str(internship.get('destination', '')), ln=True)
+
+    if internship.get('kilometrage'):
+        pdf.set_font('Arial', 'B', 12)
+        pdf.cell(40, 10, 'Kilométrage:', 0)
+        pdf.set_font('Arial', '', 12)
+        pdf.cell(0, 10, str(internship.get('kilometrage', '')), ln=True)
+
+
+    pdf_output = io.BytesIO()
+    pdf_bytes = pdf.output(dest='S').encode('latin1')
+    pdf_output.write(pdf_bytes)
+    pdf_output.seek(0)
+    return pdf_output

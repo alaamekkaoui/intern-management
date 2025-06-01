@@ -1,19 +1,16 @@
 {% extends "base.html" %}
 
-{% block title %}Liste des Départements{% endblock %}
+{% block title %}Liste des Types de Stage{% endblock %}
 
 {% block sidebar %}
 <div class="d-flex flex-column gap-3" style="margin-top: 185px;">
     {% if session.get('role') == 'admin' %}
-        <button class="btn btn-success w-100 add-department-btn" type="button" data-bs-toggle="collapse" data-bs-target="#addDepartmentForm" aria-expanded="false" aria-controls="addDepartmentForm">
-            <i class="bi bi-plus-circle"></i> Ajouter un Département
+        <button class="btn btn-success w-100 add-intern-type-btn" type="button" data-bs-toggle="collapse" data-bs-target="#addInternTypeForm" aria-expanded="false" aria-controls="addInternTypeForm">
+            <i class="bi bi-plus-circle"></i> Ajouter un Type de Stage
         </button>
     {% endif %}
-    <a href="/department/export/pdf" class="btn btn-outline-danger w-100">
+    <a href="/intern-type/export/pdf" class="btn btn-outline-danger w-100">
         <i class="bi bi-file-earmark-pdf"></i> Exporter PDF
-    </a>
-    <a href="/department/export/xlsx" class="btn btn-outline-success w-100">
-        <i class="bi bi-file-earmark-excel"></i> Exporter XLSX
     </a>
 </div>
 {% endblock %}
@@ -21,29 +18,29 @@
 {% block content %}
 <div class="container-fluid">
     <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
-        <h2 class="mb-0 text-success"><i class="bi bi-building"></i> Liste des Départements</h2>
+        <h2 class="mb-0 text-success"><i class="bi bi-briefcase"></i> Liste des Types de Stage</h2>
     </div>
 
-    <div class="collapse mb-3" id="addDepartmentForm">
-        <form method="POST" action="/department/add" class="border rounded p-3 bg-light">
+    <div class="collapse mb-3" id="addInternTypeForm">
+        <form method="POST" action="/intern-type/add" class="border rounded p-3 bg-light">
             <div class="mb-3">
-                <label for="name">Nom du département</label>
+                <label for="name">Nom du type de stage</label>
                 <input type="text" id="name" name="name" class="form-control" required>
             </div>
             <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Ajouter</button>
-            <button type="button" class="btn btn-secondary ms-2 cancel-add-department-btn" data-bs-toggle="collapse" data-bs-target="#addDepartmentForm"><i class="bi bi-x-circle"></i> Annuler</button>
+            <button type="button" class="btn btn-secondary ms-2 cancel-add-intern-type-btn" data-bs-toggle="collapse" data-bs-target="#addInternTypeForm"><i class="bi bi-x-circle"></i> Annuler</button>
         </form>
     </div>
 
     <form class="row g-2 align-items-end mb-3" method="get" action="">
         <div class="col-auto">
-            <input type="text" class="form-control" name="name" placeholder="Nom du département" value="{{ filter_name }}">
+            <input type="text" class="form-control" name="name" placeholder="Nom du type de stage" value="{{ filter_name }}">
         </div>
         <div class="col-auto">
             <button type="submit" class="btn btn-outline-primary"><i class="bi bi-search"></i> Rechercher</button>
         </div>
         <div class="col-auto">
-            <a href="/department" class="btn btn-outline-secondary">Réinitialiser</a>
+            <a href="/intern-type" class="btn btn-outline-secondary">Réinitialiser</a>
         </div>
     </form>
 
@@ -55,17 +52,17 @@
             </tr>
         </thead>
         <tbody>
-            {% for department in departments %}
+            {% for intern_type in intern_types %}
             <tr>
-                <td>{{ department.name }}</td>
+                <td>{{ intern_type.name }}</td>
                 <td>
                     <div class="d-flex flex-column gap-2">
                         <div class="d-flex gap-2">
-                            <a href="/department/{{ department.id }}" class="btn btn-info rounded-3" title="Détail"><i class="bi bi-info-circle"></i></a>
+                            <a href="/intern-type/{{ intern_type.id }}" class="btn btn-info rounded-3" title="Détail"><i class="bi bi-info-circle"></i></a>
                             {% if session.get('role') == 'admin' %}
-                                <button class="btn btn-primary rounded-3 edit-department-btn" type="button" data-bs-toggle="collapse" data-bs-target="#editDepartmentForm{{ department.id }}" aria-expanded="false" aria-controls="editDepartmentForm{{ department.id }}" title="Modifier"><i class="bi bi-pencil"></i></button>
-                                <form action="/department/delete/{{ department.id }}" method="POST" style="display:inline;">
-                                    <button type="submit" class="btn btn-danger rounded-3" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce département ?');" title="Supprimer">
+                                <button class="btn btn-primary rounded-3 edit-intern-type-btn" type="button" data-bs-toggle="collapse" data-bs-target="#editInternTypeForm{{ intern_type.id }}" aria-expanded="false" aria-controls="editInternTypeForm{{ intern_type.id }}" title="Modifier"><i class="bi bi-pencil"></i></button>
+                                <form action="/intern-type/delete/{{ intern_type.id }}" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger rounded-3" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce type de stage ?');" title="Supprimer">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
@@ -74,15 +71,15 @@
                     </div>
                 </td>
             </tr>
-            <tr class="collapse" id="editDepartmentForm{{ department.id }}">
+            <tr class="collapse" id="editInternTypeForm{{ intern_type.id }}">
                 <td colspan="2">
-                    <form method="POST" action="/department/edit/{{ department.id }}" class="border rounded p-3 bg-light">
+                    <form method="POST" action="/intern-type/edit/{{ intern_type.id }}" class="border rounded p-3 bg-light">
                         <div class="mb-3">
-                            <label for="name{{ department.id }}">Nom du département</label>
-                            <input type="text" id="name{{ department.id }}" name="name" class="form-control" value="{{ department.name }}" required>
+                            <label for="name{{ intern_type.id }}">Nom du type de stage</label>
+                            <input type="text" id="name{{ intern_type.id }}" name="name" class="form-control" value="{{ intern_type.name }}" required>
                         </div>
                         <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> Enregistrer</button>
-                        <button type="button" class="btn btn-secondary ms-2 cancel-edit-department-btn" data-bs-toggle="collapse" data-bs-target="#editDepartmentForm{{ department.id }}"><i class="bi bi-x-circle"></i> Annuler</button>
+                        <button type="button" class="btn btn-secondary ms-2 cancel-edit-intern-type-btn" data-bs-toggle="collapse" data-bs-target="#editInternTypeForm{{ intern_type.id }}"><i class="bi bi-x-circle"></i> Annuler</button>
                     </form>
                 </td>
             </tr>
@@ -94,14 +91,14 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Script to handle collapsible forms when buttons are clicked
-        document.querySelectorAll('.add-department-btn, .cancel-add-department-btn, .edit-department-btn, .cancel-edit-department-btn').forEach(function(button) {
+        document.querySelectorAll('.add-intern-type-btn, .cancel-add-intern-type-btn, .edit-intern-type-btn, .cancel-edit-intern-type-btn').forEach(function(button) {
             button.addEventListener('click', function() {
                 // Close other open collapsible forms (edit forms only)
                 document.querySelectorAll('.collapse.show').forEach(function(openCollapse) {
-                    // Check if the open collapse is an edit form (has an ID starting with editDepartmentForm)
-                    if (openCollapse.id.startsWith('editDepartmentForm')) {
+                    // Check if the open collapse is an edit form (has an ID starting with editInternTypeForm)
+                    if (openCollapse.id.startsWith('editInternTypeForm')) {
                         // Check if the clicked button is not the cancel button for this specific edit form
-                        if (!button.classList.contains('cancel-edit-department-btn') || button.dataset.bsTarget !== '#' + openCollapse.id) {
+                        if (!button.classList.contains('cancel-edit-intern-type-btn') || button.dataset.bsTarget !== '#' + openCollapse.id) {
                             var collapseInstance = bootstrap.Collapse.getInstance(openCollapse);
                             if (collapseInstance) {
                                 collapseInstance.hide();
@@ -115,8 +112,8 @@
                                 }, 350);
                             }
                         }
-                    } else if (openCollapse.id === 'addDepartmentForm') { // Handle add form collapse
-                        if (!button.classList.contains('cancel-add-department-btn')) {
+                    } else if (openCollapse.id === 'addInternTypeForm') { // Handle add form collapse
+                        if (!button.classList.contains('cancel-add-intern-type-btn')) {
                             var collapseInstance = bootstrap.Collapse.getInstance(openCollapse);
                             if (collapseInstance) {
                                 collapseInstance.hide();
@@ -135,4 +132,4 @@
         });
     });
 </script>
-{% endblock %}
+{% endblock %} 

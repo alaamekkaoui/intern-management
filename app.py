@@ -8,17 +8,24 @@ from models.department import Department
 from models.teacher import Teacher
 from models.car import Car
 from models.intern_type import InternType
-from routes import init_routes  
-
+from routes import init_app
+from config.config import Config
+from config.db import get_db_connection, create_tables
 
 load_dotenv()
 
 app = Flask(__name__)
+app.config.from_object(Config)
 
-app.secret_key = os.getenv('SECRET_KEY',)
+# Initialize database connection and create tables
+with app.app_context():
+    conn = get_db_connection()
+    if conn:
+        create_tables()
+        conn.close()
 
-# Initialize the database and create tables and register all routes from routes.py
-init_routes(app)
+# Initialize the database and create tables and register all routes from the routes package
+init_app(app)
 
 # ------------------------------------------------------
 # Define the route for the index page (your home page)

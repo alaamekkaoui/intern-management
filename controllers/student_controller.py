@@ -1,13 +1,10 @@
 from flask import render_template, request, redirect, flash, url_for, session
 from models.student import Student
 from models.internship import Internship
+from models.intern_type import InternType
 
 class StudentController:    
     def list_students(self):
-        from models.student import Student
-        from models.intern_type import InternType
-        from models.internship import Internship
-        
         # Get filter parameters
         name = request.args.get('name', '').strip()
         intern_type_id = request.args.get('intern_type_id', '').strip()
@@ -114,8 +111,10 @@ class StudentController:
             flash('Étudiant modifié avec succès.', 'success')
             return redirect(url_for('student_list'))
         from models.intern_type import InternType
+        from models.internship import Internship
         intern_types = InternType.get_all()
-        return render_template('student/edit.html', student=student, intern_types=intern_types)
+        internships = Internship.get_all()
+        return render_template('student/edit.html', student=student, intern_types=intern_types, internships=internships)
 
     def delete_student(self, student_id):
         from models.student import Student
@@ -130,3 +129,16 @@ class StudentController:
         Student.delete_student(student_id)
         flash('Étudiant supprimé avec succès.', 'success')
         return redirect(url_for('student_list'))
+
+    def show_student_details(self, student_id):
+        student = Student.get_by_id(student_id)
+        if not student:
+            flash('Étudiant introuvable.', 'danger')
+            return redirect(url_for('student_list'))
+        
+        # Get internship details if student has one
+        internship = None
+        if student.get('internship_id'):
+            internship = Internship.get_by_id(student['internship_id'])
+            
+        return render_template('student/details.html', student=student, internship=internship)

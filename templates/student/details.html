@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% block title %}Détails de l'Étudiant{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-success">
+            <i class="bi bi-person"></i> Détails de l'Étudiant
+        </h2>
+        <div>
+            <a href="/student" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Retour à la liste
+            </a>
+            {% if session.get('role') == 'admin' %}
+            <a href="/student/edit/{{ student.id }}" class="btn btn-primary">
+                <i class="bi bi-pencil"></i> Modifier
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Student Information Section -->
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-person-circle"></i> Informations de l'Étudiant
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="fw-bold">Prénom:</label>
+                    <p>{{ student.first_name }}</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="fw-bold">Nom:</label>
+                    <p>{{ student.last_name }}</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="fw-bold">Email:</label>
+                    <p>{{ student.email or 'Non renseigné' }}</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="fw-bold">Téléphone:</label>
+                    <p>{{ student.phone or 'Non renseigné' }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Internship Information Section -->
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-briefcase"></i> Informations du Stage
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if internship %}
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-bold">Type de Stage:</label>
+                        <p>{{ internship.intern_type_name or 'Non renseigné' }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-bold">Enseignant:</label>
+                        <p>
+                            {% if internship.teacher_first_name %}
+                                {{ internship.teacher_first_name }} {{ internship.teacher_last_name }}
+                            {% else %}
+                                Non assigné
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-bold">Date de début:</label>
+                        <p>{{ internship.start_date }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-bold">Date de fin:</label>
+                        <p>{{ internship.end_date }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-bold">Statut:</label>
+                        <p>
+                            {% if internship.status == 'pending' %}
+                                <span class="badge bg-warning">En attente</span>
+                            {% elif internship.status == 'in_progress' %}
+                                <span class="badge bg-info">En cours</span>
+                            {% elif internship.status == 'done' %}
+                                <span class="badge bg-success">Terminé</span>
+                            {% elif internship.status == 'canceled' %}
+                                <span class="badge bg-danger">Annulé</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    {% if internship.car_id %}
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-bold">Voiture:</label>
+                        <p>{{ internship.car_model }} - {{ internship.license_plate }}</p>
+                    </div>
+                    {% endif %}
+                    {% if internship.num_ordre_mission %}
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-bold">Numéro d'ordre de mission:</label>
+                        <p>{{ internship.num_ordre_mission }}</p>
+                    </div>
+                    {% endif %}
+                    {% if internship.description %}
+                    <div class="col-12 mb-3">
+                        <label class="fw-bold">Description:</label>
+                        <p>{{ internship.description }}</p>
+                    </div>
+                    {% endif %}
+                    {% if internship.destination %}
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-bold">Destination:</label>
+                        <p>{{ internship.destination }}</p>
+                    </div>
+                    {% endif %}
+                    {% if internship.kilometrage %}
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-bold">Kilométrage:</label>
+                        <p>{{ internship.kilometrage }} km</p>
+                    </div>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> Aucun stage assigné à cet étudiant.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

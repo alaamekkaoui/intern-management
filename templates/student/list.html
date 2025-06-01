@@ -1,124 +1,253 @@
 {% extends 'base.html' %}
 {% block title %}Liste des Étudiants{% endblock %}
+{% block sidebar %}
+<div class="d-flex flex-column gap-3" style="margin-top: 185px;">
+    {% if session.get('role') == 'admin' %}
+        <button class="btn btn-success w-100 add-student-btn" type="button" data-bs-toggle="collapse" data-bs-target="#addStudentForm" aria-expanded="false" aria-controls="addStudentForm">
+            <i class="bi bi-plus-circle"></i> Ajouter un Étudiant
+        </button>
+    {% endif %}
+    <button class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#importStudentModal">
+        <i class="bi bi-upload"></i> Importer étudiants (XLSX)
+    </button>
+    <a href="/student/export/pdf" class="btn btn-outline-danger w-100">
+        <i class="bi bi-file-earmark-pdf"></i> Exporter PDF
+    </a>
+    <a href="/student/export/xlsx" class="btn btn-outline-success w-100">
+        <i class="bi bi-file-earmark-excel"></i> Exporter XLSX
+    </a>
+</div>
+{% endblock %}
 {% block content %}
-<h2>Liste des Étudiants</h2>
-<div class="mb-3">
-    <a href="/student/export/pdf" class="btn btn-outline-danger"><i class="bi bi-file-earmark-pdf"></i> Exporter PDF</a>
-    <a href="/student/export/xlsx" class="btn btn-outline-success"><i class="bi bi-file-earmark-excel"></i> Exporter XLSX</a>
-    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#importStudentModal"><i class="bi bi-upload"></i> Importer étudiants (XLSX)</button>
-</div>
-<!-- Import Modal -->
-<div class="modal fade" id="importStudentModal" tabindex="-1" aria-labelledby="importStudentModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form method="post" action="/student/import/xlsx" enctype="multipart/form-data">
-        <div class="modal-header">
-          <h5 class="modal-title" id="importStudentModalLabel">Importer étudiants (XLSX)</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label for="file" class="form-label">Fichier XLSX</label>
-            <input type="file" class="form-control" id="file" name="file" accept=".xlsx" required>
-            <a href="/student/sample/xlsx" class="btn btn-link mt-1">Télécharger un modèle XLSX</a>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">Importer</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-        </div>
-      </form>
+<div class="container-fluid">
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
+        <h2 class="mb-0 text-success"><i class="bi bi-person"></i> Liste des Étudiants</h2>
     </div>
-  </div>
-</div>
-<form class="row g-2 align-items-end mb-3" method="get" action="">
-    <div class="col-auto">
-        <input type="text" class="form-control" name="name" placeholder="Nom de l'étudiant" value="{{ filter_name }}">
-    </div>
-    <div class="col-auto">
-        <select class="form-select" name="intern_type_id" onchange="this.form.submit()">
-            <option value="">Type de stage</option>
-            {% for type in intern_types %}
-                <option value="{{ type.id }}" {% if filter_intern_type_id == type.id|string %}selected{% endif %}>{{ type.name }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <div class="col-auto">
-        <button type="submit" class="btn btn-outline-primary"><i class="bi bi-search"></i> Rechercher</button>
-    </div>
-    <div class="col-auto">
-        <a href="/student" class="btn btn-outline-secondary">Réinitialiser</a>
-    </div>
-</form>
-<a href="/student/add" class="btn btn-success mb-2">Ajouter un étudiant</a>
-<table class="table">
-    <thead class="table-success">
-        <tr>
-            <th>Prénom</th>
-            <th>Nom</th>
-            <th>Email</th>
-            <th>Téléphone</th>
-            <th>Type de stage</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for student in students %}
-        <tr>
-            <td>{{ student.first_name }}</td>
-            <td>{{ student.last_name }}</td>
-            <td>{{ student.email }}</td>
-            <td>{{ student.phone }}</td>
-            <td>{{ student.intern_type_name if student.intern_type_name else '' }}</td>
-            <td>
-                <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#editStudentForm{{ student.id }}" aria-expanded="false" aria-controls="editStudentForm{{ student.id }}" {% if session.get('role') == 'car' %}style="display:none;"{% endif %} title="Modifier"><i class="bi bi-pencil"></i></button>
-                {% if session.get('role') == 'admin' %}
-                <form action="/student/delete/{{ student.id }}" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Supprimer cet étudiant ?');" title="Supprimer"><i class="bi bi-trash"></i></button>
-                </form>
-                {% endif %}
-            </td>
-        </tr>
-        <tr class="collapse" id="editStudentForm{{ student.id }}">
-            <td colspan="6">
-                <form action="/student/edit/{{ student.id }}" method="POST" class="border rounded p-3 bg-light">
-                    <div class="row g-2">
-                        <div class="col-md-4 mb-2">
-                            <label for="first_name{{ student.id }}">Prénom</label>
-                            <input type="text" class="form-control" id="first_name{{ student.id }}" name="first_name" value="{{ student.first_name }}" required>
-                        </div>
-                        <div class="col-md-4 mb-2">
-                            <label for="last_name{{ student.id }}">Nom</label>
-                            <input type="text" class="form-control" id="last_name{{ student.id }}" name="last_name" value="{{ student.last_name }}" required>
-                        </div>
-                        <div class="col-md-4 mb-2">
-                            <label for="email{{ student.id }}">Email</label>
-                            <input type="email" class="form-control" id="email{{ student.id }}" name="email" value="{{ student.email }}">
-                        </div>
-                        <div class="col-md-4 mb-2">
-                            <label for="phone{{ student.id }}">Téléphone</label>
-                            <input type="text" class="form-control" id="phone{{ student.id }}" name="phone" value="{{ student.phone }}">
-                        </div>
-                        <div class="col-md-4 mb-2">
-                            <label for="internship_id{{ student.id }}">Stage (enseignant & type)</label>
-                            <select class="form-control" id="internship_id{{ student.id }}" name="internship_id">
-                                <option value="">Aucun</option>
-                                {% if internships is defined %}
-                                    {% for internship in internships %}
-                                        <option value="{{ internship.id }}" {% if student.internship_id == internship.id %}selected{% endif %}>
-                                            {{ internship.start_date }} - {{ internship.end_date }} | {{ internship.intern_type_name or 'N/A' }} | {{ internship.teacher_first_name }} {{ internship.teacher_last_name }}
-                                        </option>
-                                    {% endfor %}
+
+    {% if session.get('role') == 'admin' %}
+    <div class="collapse mb-3" id="addStudentForm">
+        <form method="POST" action="/student/add" class="border rounded p-3 bg-light">
+            <div class="row g-3">
+                <div class="col-md-6 mb-2">
+                    <label for="first_name">Prénom</label>
+                    <input type="text" class="form-control" id="first_name" name="first_name" required>
+                </div>
+                <div class="col-md-6 mb-2">
+                    <label for="last_name">Nom</label>
+                    <input type="text" class="form-control" id="last_name" name="last_name" required>
+                </div>
+                <div class="col-md-6 mb-2">
+                    <label for="email">Email</label>
+                    <input type="email" class="form-control" id="email" name="email">
+                </div>
+                <div class="col-md-6 mb-2">
+                    <label for="phone">Téléphone</label>
+                    <input type="text" class="form-control" id="phone" name="phone">
+                </div>
+                <div class="col-12 mb-2">
+                    <label for="internship_id">Stage (enseignant & type)</label>
+                    <select class="form-control" id="internship_id" name="internship_id" style="min-width: 100%;">
+                        <option value="">Aucun</option>
+                        {% for internship in internships %}
+                            <option value="{{ internship.id }}">
+                                {{ internship.start_date }} - {{ internship.end_date }} | 
+                                {% if internship.intern_type_name %}
+                                    {{ internship.intern_type_name }}
+                                {% else %}
+                                    N/A
+                                {% endif %} | 
+                                {% if internship.teacher_first_name %}
+                                    {{ internship.teacher_first_name }} {{ internship.teacher_last_name }}
+                                {% else %}
+                                    N/A
                                 {% endif %}
-                            </select>
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Ajouter</button>
+            <button type="button" class="btn btn-secondary ms-2 cancel-add-student-btn" data-bs-toggle="collapse" data-bs-target="#addStudentForm"><i class="bi bi-x-circle"></i> Annuler</button>
+        </form>
+    </div>
+    {% endif %}
+
+    <!-- Import Modal -->
+    <div class="modal fade" id="importStudentModal" tabindex="-1" aria-labelledby="importStudentModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form method="post" action="/student/import/xlsx" enctype="multipart/form-data">
+            <div class="modal-header">
+              <h5 class="modal-title" id="importStudentModalLabel">Importer étudiants (XLSX)</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="file" class="form-label">Fichier XLSX</label>
+                <input type="file" class="form-control" id="file" name="file" accept=".xlsx" required>
+                <a href="/student/sample/xlsx" class="btn btn-link mt-1">Télécharger un modèle XLSX</a>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-primary">Importer</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <form class="row g-2 align-items-end mb-3" method="get" action="">
+        <div class="col-auto">
+            <input type="text" class="form-control" name="name" placeholder="Nom de l'étudiant" value="{{ filter_name }}">
+        </div>
+        <div class="col-auto">
+            <select class="form-select" name="intern_type_id" onchange="this.form.submit()">
+                <option value="">Type de stage</option>
+                {% for type in intern_types %}
+                    <option value="{{ type.id }}" {% if filter_intern_type_id == type.id|string %}selected{% endif %}>{{ type.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-outline-primary"><i class="bi bi-search"></i> Rechercher</button>
+        </div>
+        <div class="col-auto">
+            <a href="/student" class="btn btn-outline-secondary">Réinitialiser</a>
+        </div>
+    </form>
+
+    <table class="table">
+        <thead class="table-success">
+            <tr>
+                <th>Prénom</th>
+                <th>Nom</th>
+                <th>Email</th>
+                <th>Téléphone</th>
+                <th>Type de stage</th>
+                <th>Enseignant</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in students %}
+            <tr>
+                <td>{{ student.first_name }}</td>
+                <td>{{ student.last_name }}</td>
+                <td>{{ student.email }}</td>
+                <td>{{ student.phone }}</td>
+                <td>{{ student.intern_type_name if student.intern_type_name else '' }}</td>
+                <td>{{ student.teacher_first_name ~ ' ' ~ student.teacher_last_name if student.teacher_first_name else '' }}</td>
+                <td>
+                    <div class="d-flex flex-column gap-2">
+                        <div class="d-flex gap-2">
+                            <a href="/student/{{ student.id }}" class="btn btn-info rounded-3" title="Détail"><i class="bi bi-info-circle"></i></a>
+                            {% if session.get('role') == 'admin' %}
+                                <button class="btn btn-primary rounded-3 edit-student-btn" type="button" data-bs-toggle="collapse" data-bs-target="#editStudentForm{{ student.id }}" aria-expanded="false" aria-controls="editStudentForm{{ student.id }}" title="Modifier"><i class="bi bi-pencil"></i></button>
+                                <form action="/student/delete/{{ student.id }}" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger rounded-3" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet étudiant ?');" title="Supprimer">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            {% endif %}
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-success btn-sm mt-2"><i class="bi bi-check-circle"></i> Enregistrer</button>
-                    <button type="button" class="btn btn-secondary btn-sm mt-2 ms-2" data-bs-toggle="collapse" data-bs-target="#editStudentForm{{ student.id }}"><i class="bi bi-x-circle"></i> Annuler</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+                </td>
+            </tr>
+            <tr class="collapse" id="editStudentForm{{ student.id }}">
+                <td colspan="7">
+                    <form action="/student/edit/{{ student.id }}" method="POST" class="border rounded p-3 bg-light">
+                        <div class="row g-3">
+                            <div class="col-md-6 mb-2">
+                                <label for="first_name{{ student.id }}">Prénom</label>
+                                <input type="text" class="form-control" id="first_name{{ student.id }}" name="first_name" value="{{ student.first_name }}" required>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label for="last_name{{ student.id }}">Nom</label>
+                                <input type="text" class="form-control" id="last_name{{ student.id }}" name="last_name" value="{{ student.last_name }}" required>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label for="email{{ student.id }}">Email</label>
+                                <input type="email" class="form-control" id="email{{ student.id }}" name="email" value="{{ student.email }}">
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label for="phone{{ student.id }}">Téléphone</label>
+                                <input type="text" class="form-control" id="phone{{ student.id }}" name="phone" value="{{ student.phone }}">
+                            </div>
+                            <div class="col-12 mb-2">
+                                <label for="internship_id{{ student.id }}">Stage (enseignant & type)</label>
+                                <select class="form-control" id="internship_id{{ student.id }}" name="internship_id" style="min-width: 100%;">
+                                    <option value="">Aucun</option>
+                                    {% for internship in internships %}
+                                        <option value="{{ internship.id }}" {% if student.internship_id == internship.id %}selected{% endif %}>
+                                            {{ internship.start_date }} - {{ internship.end_date }} | 
+                                            {% if internship.intern_type_name %}
+                                                {{ internship.intern_type_name }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %} | 
+                                            {% if internship.teacher_first_name %}
+                                                {{ internship.teacher_first_name }} {{ internship.teacher_last_name }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> Enregistrer</button>
+                        <button type="button" class="btn btn-secondary ms-2 cancel-edit-student-btn" data-bs-toggle="collapse" data-bs-target="#editStudentForm{{ student.id }}"><i class="bi bi-x-circle"></i> Annuler</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Script to handle collapsible forms when buttons are clicked
+        document.querySelectorAll('.add-student-btn, .cancel-add-student-btn, .edit-student-btn, .cancel-edit-student-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                // Close other open collapsible forms (edit forms only)
+                document.querySelectorAll('.collapse.show').forEach(function(openCollapse) {
+                    // Check if the open collapse is an edit form (has an ID starting with editStudentForm)
+                    if (openCollapse.id.startsWith('editStudentForm')) {
+                        // Check if the clicked button is not the cancel button for this specific edit form
+                        if (!button.classList.contains('cancel-edit-student-btn') || button.dataset.bsTarget !== '#' + openCollapse.id) {
+                            var collapseInstance = bootstrap.Collapse.getInstance(openCollapse);
+                            if (collapseInstance) {
+                                collapseInstance.hide();
+                            } else {
+                                // If instance not found, manually remove the show class and add collapsing class for animation
+                                openCollapse.classList.remove('show');
+                                openCollapse.classList.add('collapsing');
+                                // Timeout to remove collapsing class after animation (approx 350ms for Bootstrap 5)
+                                setTimeout(function() {
+                                    openCollapse.classList.remove('collapsing');
+                                }, 350);
+                            }
+                        }
+                    } else if (openCollapse.id === 'addStudentForm') { // Handle add form collapse
+                        if (!button.classList.contains('cancel-add-student-btn')) {
+                            var collapseInstance = bootstrap.Collapse.getInstance(openCollapse);
+                            if (collapseInstance) {
+                                collapseInstance.hide();
+                            } else {
+                                // If instance not found, manually remove the show class and add collapsing class for animation
+                                openCollapse.classList.remove('show');
+                                openCollapse.classList.add('collapsing');
+                                setTimeout(function() {
+                                    openCollapse.classList.remove('collapsing');
+                                }, 350);
+                            }
+                        }
+                    }
+                });
+            });
+        });
+    });
+</script>
 {% endblock %}

@@ -10,12 +10,19 @@ class Internship:
             conn = get_db_connection()
             cursor = conn.cursor(dictionary=True)
             cursor.execute("""
-                SELECT internships.*, teachers.first_name, teachers.last_name, teachers.email, 
-                       cars.model AS car_model, cars.license_plate, intern_types.name AS intern_type
-                FROM internships
-                JOIN teachers ON internships.teacher_id = teachers.id
-                LEFT JOIN cars ON internships.car_id = cars.id
-                LEFT JOIN intern_types ON internships.intern_type_id = intern_types.id
+                SELECT 
+                    i.*,
+                    t.first_name as teacher_first_name,
+                    t.last_name as teacher_last_name,
+                    t.email as teacher_email,
+                    c.model AS car_model,
+                    c.license_plate,
+                    it.name AS intern_type_name
+                FROM internships i
+                LEFT JOIN teachers t ON i.teacher_id = t.id
+                LEFT JOIN cars c ON i.car_id = c.id
+                LEFT JOIN intern_types it ON i.intern_type_id = it.id
+                ORDER BY i.start_date DESC
             """)
             internships = cursor.fetchall()
         except Exception as e:
@@ -189,11 +196,27 @@ class Internship:
 
     @staticmethod
     def get_by_id(internship_id):
-        connection = get_db_connection()  # Make sure this function is defined correctly
-        cursor = connection.cursor(dictionary=True)
-        cursor.execute('SELECT * FROM internships WHERE id = %s', (internship_id,))
+        """Get a single internship with all related information."""
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT 
+                i.*,
+                t.first_name as teacher_first_name,
+                t.last_name as teacher_last_name,
+                t.email as teacher_email,
+                c.model AS car_model,
+                c.license_plate,
+                it.name AS intern_type_name
+            FROM internships i
+            LEFT JOIN teachers t ON i.teacher_id = t.id
+            LEFT JOIN cars c ON i.car_id = c.id
+            LEFT JOIN intern_types it ON i.intern_type_id = it.id
+            WHERE i.id = %s
+        """, (internship_id,))
         internship = cursor.fetchone()
-        connection.close()
+        cursor.close()
+        conn.close()
         return internship
 
     @staticmethod

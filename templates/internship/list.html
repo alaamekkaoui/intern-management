@@ -133,8 +133,8 @@
         <tbody>
             {% for internship in internships %}
             <tr>
-                <td>{{ internship.first_name }} {{ internship.last_name }}</td>
-                <td>{{ internship.intern_type if internship.intern_type else 'N/A' }}</td>
+                <td>{{ internship.teacher_first_name }} {{ internship.teacher_last_name }}</td>
+                <td>{{ internship.intern_type_name if internship.intern_type_name else 'N/A' }}</td>
                 <td>{{ 'Oui' if internship.car_id else 'Non' }}</td>
                 <td>
                     {% if internship.status == 'pending' %}En attente{% elif internship.status == 'canceled' %}Annulé{% elif internship.status == 'done' %}Terminé{% else %}Inconnu{% endif %}

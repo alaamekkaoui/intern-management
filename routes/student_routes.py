@@ -27,16 +27,19 @@ def register_student_routes(app):
     @app.route('/student/edit/<int:student_id>', methods=['GET', 'POST'])
     @role_required('admin', 'teacher')
     def edit_student(student_id):
-        # Assuming StudentController().edit_student handles both GET (showing form) and POST (processing form)
-        return student_controller.edit_student(student_id, request) # Pass request object
+        return student_controller.edit_student(student_id)
 
     @app.route('/student/delete/<int:student_id>', methods=['POST'])
     @role_required('admin')
     def delete_student(student_id):
-        # Assuming StudentController().delete_student handles the deletion
         return student_controller.delete_student(student_id)
 
     @app.route('/student/sample/xlsx')
     def sample_student_xlsx_route():
         xlsx_io = sample_student_xlsx()
-        return send_file(xlsx_io, as_attachment=True, download_name='sample_student_import.xlsx', mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') 
+        return send_file(xlsx_io, as_attachment=True, download_name='sample_student_import.xlsx', mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+    @app.route('/student/<int:student_id>')
+    @role_required('admin', 'teacher')
+    def student_details(student_id):
+        return student_controller.show_student_details(student_id) 

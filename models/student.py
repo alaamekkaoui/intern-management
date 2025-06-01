@@ -6,20 +6,52 @@ class Student:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         cursor.execute("""
-            SELECT students.*, 
-                   internships.start_date AS internship_start, internships.end_date AS internship_end,                   
-                       intern_types.id AS intern_type_id, 
-                   intern_types.name AS intern_type_name, 
-                   teachers.first_name AS teacher_first_name, teachers.last_name AS teacher_last_name
-            FROM students
-            LEFT JOIN internships ON students.internship_id = internships.id
-            LEFT JOIN intern_types ON internships.intern_type_id = intern_types.id
-            LEFT JOIN teachers ON students.teacher_id = teachers.id
+            SELECT 
+                s.*,
+                i.id as internship_id,
+                i.start_date as internship_start_date,
+                i.end_date as internship_end_date,
+                it.id as intern_type_id,
+                it.name as intern_type_name,
+                t.id as teacher_id,
+                t.first_name as teacher_first_name,
+                t.last_name as teacher_last_name
+            FROM students s
+            LEFT JOIN internships i ON s.internship_id = i.id
+            LEFT JOIN intern_types it ON i.intern_type_id = it.id
+            LEFT JOIN teachers t ON i.teacher_id = t.id
+            ORDER BY s.last_name, s.first_name
         """)
         students = cursor.fetchall()
         cursor.close()
         conn.close()
         return students
+
+    @staticmethod
+    def get_by_id(student_id):
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT 
+                s.*,
+                i.id as internship_id,
+                i.start_date as internship_start_date,
+                i.end_date as internship_end_date,
+                it.id as intern_type_id,
+                it.name as intern_type_name,
+                t.id as teacher_id,
+                t.first_name as teacher_first_name,
+                t.last_name as teacher_last_name
+            FROM students s
+            LEFT JOIN internships i ON s.internship_id = i.id
+            LEFT JOIN intern_types it ON i.intern_type_id = it.id
+            LEFT JOIN teachers t ON i.teacher_id = t.id
+            WHERE s.id = %s
+        """, (student_id,))
+        student = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        return student
 
     @staticmethod
     def add_student(first_name, last_name, email=None, phone=None):
@@ -37,16 +69,6 @@ class Student:
         cursor.close()
         conn.close()
         return student_id
-
-    @staticmethod
-    def get_by_id(student_id):
-        conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM students WHERE id = %s", (student_id,))
-        student = cursor.fetchone()
-        cursor.close()
-        conn.close()
-        return student
 
     @staticmethod
     def assign_internship(student_id, internship_id):

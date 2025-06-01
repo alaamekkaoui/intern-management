@@ -1,18 +1,31 @@
 {% extends 'base.html' %}
 
 {% block title %}Types de stage{% endblock %}
-
+{% block sidebar %}
+<div class="d-flex flex-column gap-3" style="margin-top: 185px;">
+    {% if session.get('role') in ['admin', 'teacher'] %}
+        <button class="btn btn-success w-100 add-type-btn" type="button" data-bs-toggle="collapse" data-bs-target="#addTypeForm" aria-expanded="false" aria-controls="addTypeForm">
+            <i class="bi bi-plus-circle"></i> Ajouter un Type
+        </button>
+    {% endif %}
+    <button class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#importTypeModal">
+        <i class="bi bi-upload"></i> Importer XLSX
+    </button>
+    <a href="/internship/types/export/xlsx" class="btn btn-outline-success w-100">
+        <i class="bi bi-file-earmark-excel"></i> Exporter XLSX
+    </a>
+    <a href="/internship/types/sample/xlsx" class="btn btn-outline-secondary w-100">
+        <i class="bi bi-download"></i> Exemple XLSX
+    </a>
+</div>
+{% endblock %}
 {% block content %}
 <div class="container mt-4">
     <h2 class="text-secondary mb-4"><i class="bi bi-list-ul"></i> Types de stage</h2>
     <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-        {% if session.get('role') in ['admin', 'teacher'] %}
-            <button class="btn btn-success add-type-btn" type="button" data-bs-toggle="collapse" data-bs-target="#addTypeForm" aria-expanded="false" aria-controls="addTypeForm"><i class="bi bi-plus-circle"></i> Ajouter un Type</button>
-        {% endif %}
-        <a href="/internship/types/export/xlsx" class="btn btn-outline-success"><i class="bi bi-file-earmark-excel"></i> Exporter XLSX</a>
-        <a href="/internship/types/sample/xlsx" class="btn btn-outline-secondary"><i class="bi bi-download"></i> Exemple XLSX</a>
-        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#importTypeModal"><i class="bi bi-upload"></i> Importer XLSX</button>
-    </div>
+        
+        
+</div>
     {% if session.get('role') in ['admin', 'teacher'] %}
     <div class="collapse mb-3" id="addTypeForm">
         <form method="POST" action="/internship/types/add" class="border rounded p-3 bg-light">

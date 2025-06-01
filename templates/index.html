@@ -3,6 +3,48 @@
 {% block title %}Accueil{% endblock %}
 
 {% block content %}
+<style>
+/* Add styles for colored borders and hover effect */
+.card.card-statistic {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    border: 1px solid transparent; /* Add a base border */
+}
+
+.card.card-statistic:hover {
+    transform: translateY(-5px); /* Lift card slightly on hover */
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15) !important; /* More prominent shadow on hover */
+}
+
+/* Define border colors matching icon/button colors */
+.card-statistic.border-primary {
+    border-color: #0d6efd !important;
+}
+.card-statistic.border-success {
+    border-color: #198754 !important;
+}
+.card-statistic.border-warning {
+    border-color: #ffc107 !important;
+}
+.card-statistic.border-info {
+    border-color: #0dcaf0 !important;
+}
+.card-statistic.border-secondary {
+    border-color: #6c757d !important;
+}
+.card-statistic.border-dark {
+    border-color: #212529 !important;
+}
+
+/* Ensure icons and counts are slightly larger */
+.card-statistic .bi {
+    font-size: 3rem !important; /* Slightly larger icon size */
+}
+.card-statistic .display-6 {
+    font-size: 2.75rem !important; /* Slightly larger count font size */
+}
+
+</style>
+
 <div class="container mt-5">
     <div class="row align-items-center mb-5">
         <div class="col-md-2 text-center mb-3 mb-md-0">
@@ -19,9 +61,9 @@
     <div class="row g-4">
         {% if session.get('role') in ['admin', 'teacher', 'car'] %}
         <div class="col-md-4">
-            <div class="card h-100 shadow-sm border-0 rounded-4">
+            <div class="card h-100 shadow-sm rounded-4 card-statistic border-primary">
                 <div class="card-body text-center">
-                    <i class="bi bi-journal-text text-primary" style="font-size:2.5rem;"></i>
+                    <i class="bi bi-journal-text text-primary"></i>
                     <h5 class="card-title mt-3">Stages</h5>
                     <p class="display-6 fw-semibold">{{ internship_count }}</p>
                     <a href="/internship" class="btn btn-outline-primary rounded-pill">Voir les stages</a>
@@ -31,9 +73,9 @@
         {% endif %}
         {% if session.get('role') in ['admin', 'teacher'] %}
         <div class="col-md-4">
-            <div class="card h-100 shadow-sm border-0 rounded-4">
+            <div class="card h-100 shadow-sm rounded-4 card-statistic border-success">
                 <div class="card-body text-center">
-                    <i class="bi bi-person-badge text-success" style="font-size:2.5rem;"></i>
+                    <i class="bi bi-person-badge text-success"></i>
                     <h5 class="card-title mt-3">Enseignants</h5>
                     <p class="display-6 fw-semibold">{{ teacher_count }}</p>
                     <a href="/teacher" class="btn btn-outline-success rounded-pill">Voir les enseignants</a>
@@ -43,9 +85,9 @@
         {% endif %}
         {% if session.get('role') in ['admin', 'teacher'] %}
         <div class="col-md-4">
-            <div class="card h-100 shadow-sm border-0 rounded-4">
+            <div class="card h-100 shadow-sm rounded-4 card-statistic border-warning">
                 <div class="card-body text-center">
-                    <i class="bi bi-building text-warning" style="font-size:2.5rem;"></i>
+                    <i class="bi bi-building text-warning"></i>
                     <h5 class="card-title mt-3">Départements</h5>
                     <p class="display-6 fw-semibold">{{ department_count }}</p>
                     <a href="/department" class="btn btn-outline-warning rounded-pill">Voir les départements</a>
@@ -55,9 +97,9 @@
         {% endif %}
         {% if session.get('role') in ['admin', 'car'] %}
         <div class="col-md-4">
-            <div class="card h-100 shadow-sm border-0 rounded-4">
+            <div class="card h-100 shadow-sm rounded-4 card-statistic border-info">
                 <div class="card-body text-center">
-                    <i class="bi bi-truck text-info" style="font-size:2.5rem;"></i>
+                    <i class="bi bi-truck text-info"></i>
                     <h5 class="card-title mt-3">Voitures</h5>
                     <p class="display-6 fw-semibold">{{ car_count }}</p>
                     <a href="/car" class="btn btn-outline-info rounded-pill">Voir les voitures</a>
@@ -67,9 +109,9 @@
         {% endif %}
         {% if session.get('role') in ['admin', 'teacher'] %}
         <div class="col-md-4">
-            <div class="card h-100 shadow-sm border-0 rounded-4">
+            <div class="card h-100 shadow-sm rounded-4 card-statistic border-secondary">
                 <div class="card-body text-center">
-                    <i class="bi bi-list-ul text-secondary" style="font-size:2.5rem;"></i>
+                    <i class="bi bi-list-ul text-secondary"></i>
                     <h5 class="card-title mt-3">Types de stage</h5>
                     <p class="display-6 fw-semibold">{{ intern_type_count }}</p>
                     <a href="/internship/types" class="btn btn-outline-secondary rounded-pill">Voir les types</a>
@@ -79,9 +121,9 @@
         {% endif %}
         {% if session.get('role') == 'admin' %}
         <div class="col-md-4">
-            <div class="card h-100 shadow-sm border-0 rounded-4">
+            <div class="card h-100 shadow-sm rounded-4 card-statistic border-dark">
                 <div class="card-body text-center">
-                    <i class="bi bi-people text-dark" style="font-size:2.5rem;"></i>
+                    <i class="bi bi-people text-dark"></i>
                     <h5 class="card-title mt-3">Utilisateurs</h5>
                     <p class="display-6 fw-semibold">{{ user_count }}</p>
                     <a href="/user" class="btn btn-outline-dark rounded-pill">Voir les utilisateurs</a>
@@ -91,9 +133,9 @@
         {% endif %}
         {% if session.get('role') in ['admin', 'teacher', 'car'] %}
         <div class="col-md-4">
-            <div class="card h-100 shadow-sm border-0 rounded-4">
+            <div class="card h-100 shadow-sm rounded-4 card-statistic border-primary">
                 <div class="card-body text-center">
-                    <i class="bi bi-people text-primary" style="font-size:2.5rem;"></i>
+                    <i class="bi bi-people text-primary"></i>
                     <h5 class="card-title mt-3">Étudiants</h5>
                     <p class="display-6 fw-semibold">{{ student_count }}</p>
                     <a href="/student" class="btn btn-outline-info rounded-pill">Voir les étudiants</a>

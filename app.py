@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 from dotenv import load_dotenv
 from flask import Flask, redirect, render_template, request, url_for, flash, session
@@ -27,6 +28,11 @@ with app.app_context():
 # Initialize the database and create tables and register all routes from the routes package
 init_app(app)
 
+# Context processor to inject current year into all templates
+@app.context_processor
+def inject_current_year():
+    return {'current_year': datetime.now().year}
+
 # ------------------------------------------------------
 # Define the route for the index page (your home page)
 @app.route('/')
@@ -48,7 +54,8 @@ def index():
     if role in ['admin', 'teacher', 'car']:
         from models.student import Student
         counts['student_count'] = len(Student.get_all())
-    return render_template('index.html', **counts)  
+    current_year = datetime.now().year
+    return render_template('index.html', **counts, current_year=current_year)  
 # ------------------------------------------------------
 # Route to create the default admin if it doesn't exist
 @app.route('/create_default_admin')
@@ -80,13 +87,14 @@ def debug_route():
     if debug_mode == 'False':
         return render_template('404.html'), 404
     if debug_mode == 'True':
+        current_year = datetime.now().year
         if request.method == 'POST':
             code = request.form.get('code')
             if code == debug_code:
-                return render_template('debug.html', success=True, debug_mode=True)
+                return render_template('debug.html', success=True, debug_mode=True, current_year=current_year)
             else:
-                return render_template('debug.html', success=False, debug_mode=True)
-        return render_template('debug.html', debug_mode=True)
+                return render_template('debug.html', success=False, debug_mode=True, current_year=current_year)
+        return render_template('debug.html', debug_mode=True, current_year=current_year)
     return render_template('404.html'), 404
 # ------------------------------------------------------
 

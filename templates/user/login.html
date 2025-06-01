@@ -1,19 +1,130 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
-{% block title %}Connexion{% endblock %}
+{% block navbar %}{% endblock %}
 
 {% block content %}
-    <h2>Connexion</h2>
+<style>
+body {
+    overflow: hidden;
+}
+.login-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 80px;
+    background-color: white;
+}
+.login-card {
+    width: 100%;
+    max-width: 400px;
+    padding: 2.5rem;
+    border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    border-radius: 1rem;
+    background-color: white;
+    margin-top: 0;
+}
+.login-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+.login-header h2 {
+    color: #198754;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 1.75rem;
+}
+.login-header p {
+    color: #6c757d;
+    margin-bottom: 0;
+    font-size: 0.95rem;
+}
+.form-floating {
+    margin-bottom: 1.25rem;
+}
+.form-floating > .form-control {
+    padding: 1rem 0.75rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+}
+.form-floating > .form-control:focus {
+    border-color: #198754;
+    box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.1);
+}
+.form-floating > label {
+    padding: 1rem 0.75rem;
+    color: #6c757d;
+}
+.btn-login {
+    padding: 0.875rem;
+    font-weight: 500;
+    font-size: 1rem;
+    background-color: #4caf50;
+    border-color: #4caf50;
+    transition: all 0.2s ease-in-out;
+}
+.btn-login:hover {
+    background-color: #43a047;
+    border-color: #43a047;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.2);
+}
+.btn-login:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+.alert {
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+.alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c2c7;
+    color: #842029;
+}
+.app-title {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #198754;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+</style>
 
-    <form action="/login" method="POST">
-        <div class="form-group">
-            <label for="username">Nom d'utilisateur</label>
-            <input type="text" class="form-control" id="username" name="username" required>
+<div class="login-container">
+    <h1 class="app-title">Gestion des stages</h1>
+    <div class="login-card">
+        <div class="login-header">
+            <h2><i class="bi bi-person-circle"></i> Connexion</h2>
+            <p>Connectez-vous pour accéder à votre compte</p>
         </div>
-        <div class="form-group">
-            <label for="password">Mot de passe</label>
-            <input type="password" class="form-control" id="password" name="password" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Se connecter</button>
-    </form>
+        
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="post" action="/login">
+            <div class="form-floating">
+                <input type="text" class="form-control" id="username" name="username" placeholder="Nom d'utilisateur" required>
+                <label for="username">Nom d'utilisateur</label>
+            </div>
+            <div class="form-floating">
+                <input type="password" class="form-control" id="password" name="password" placeholder="Mot de passe" required>
+                <label for="password">Mot de passe</label>
+            </div>
+            <button type="submit" class="btn btn-login w-100">
+                <i class="bi bi-box-arrow-in-right"></i> Se connecter
+            </button>
+        </form>
+    </div>
+</div>
 {% endblock %}

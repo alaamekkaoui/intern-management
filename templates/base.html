@@ -17,7 +17,7 @@
         }
         .content-wrapper {
             min-height: calc(100vh - 56px - 60px);
-            padding-bottom: 80px;
+            padding-bottom: 100px;
             margin-left: 250px; /* Add margin for sidebar */
             padding-right: 2rem;
             max-width: 1500px;
@@ -70,6 +70,36 @@
         footer a:hover {
             color: #E10600;
         }
+        /* Styles for small initials in navbar */
+        .navbar-initials {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #198754; /* Default theme color */
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-right: 8px; /* Space between initials and text */
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+        /* Color variations (reusing logic) */
+        .navbar-initials[data-color="1"] { background-color: #198754; } /* Green */
+        .navbar-initials[data-color="2"] { background-color: #0d6efd; } /* Blue */
+        .navbar-initials[data-color="3"] { background-color: #dc3545; } /* Red */
+        .navbar-initials[data-color="4"] { background-color: #6f42c1; } /* Purple */
+        .navbar-initials[data-color="5"] { background-color: #fd7e14; } /* Orange */
+        .navbar-initials[data-color="6"] { background-color: #20c997; } /* Teal */
+        .navbar-initials[data-color="7"] { background-color: #e83e8c; } /* Pink */
+        .navbar-initials[data-color="8"] { background-color: #6c757d; } /* Gray */
+        /* Adjust dropdown toggle alignment */
+        .navbar-nav .dropdown-toggle {
+            display: flex;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
@@ -111,12 +141,22 @@
                     {% if session.get('role') %}
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-person-circle"></i> {{ session.get('username') }}
+                                {% set username = session.get('username', 'User') %}
+                                {% set initials = username[:2] | upper %}
+                                {% set color_index = (username|length % 8) + 1 %}
+                                <div class="navbar-initials" data-color="{{ color_index }}">
+                                    {{ initials }}
+                                </div>
+                                {{ username }}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                 {% if session.get('role') == 'admin' %}
                                     <li><a class="dropdown-item" href="/user"><i class="bi bi-person-circle"></i> Profil et Utilisateurs</a></li>
                                     <li><a class="dropdown-item" href="/logs" target="_blank"><i class="bi bi-clock-history"></i> Historique d'activité</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                {% endif %}
+                                {% if session.get('role') != 'admin' %}
+                                    <li><a class="dropdown-item" href="/user"><i class="bi bi-person-circle"></i> Profil </a></li>
                                     <li><hr class="dropdown-divider"></li>
                                 {% endif %}
                                 <li><a class="dropdown-item" href="/logout"><i class="bi bi-box-arrow-right"></i> Déconnexion</a></li>

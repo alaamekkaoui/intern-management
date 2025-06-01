@@ -37,48 +37,89 @@
 
 /* Ensure icons and counts are slightly larger */
 .card-statistic .bi {
-    font-size: 3rem !important; /* Slightly larger icon size */
+    font-size: 2.8rem !important; /* Slightly smaller icon size */
 }
 .card-statistic .display-6 {
-    font-size: 2.75rem !important; /* Slightly larger count font size */
+    font-size: 2.5rem !important; /* Slightly smaller count font size */
 }
 
 </style>
 
-<div class="container mt-5">
-    <div class="row align-items-center mb-5">
+<div class="container mt-4"> {# Decreased top margin for the main container #}
+    <div class="row align-items-center mb-4"> {# Decreased bottom margin for welcome section #}
         <div class="col-md-2 text-center mb-3 mb-md-0">
-            <img src="/static/images/iav.png" alt="Logo IAV" class="img-fluid" style="max-width: 90px; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08);">
+            <img src="/static/images/iav.png" alt="Logo IAV" class="img-fluid" style="max-width: 80px; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08);"> {# Slightly decreased logo size #}
         </div>
         <div class="col-md-10">
-            <h1 class="display-4 fw-bold mb-1" style="color: #198754;">Bienvenue, {{ session.get('username', 'Invité') }}</h1>
-            <span class="badge bg-success fs-5 mb-2">
+            <h1 class="display-5 fw-bold mb-1" style="color: #198754;">Bienvenue, {{ session.get('username', 'Invité') }}</h1> {# Decreased title font size #}
+            <span class="badge bg-success fs-6 mb-2">
                Role : {% if session.get('role') == 'admin' %}Admin{% elif session.get('role') == 'teacher' %}Professeur{% elif session.get('role') == 'car' %}Logistique{% else %}Aucun{% endif %}
             </span>
-            <p class="lead text-muted">Bienvenue sur la plateforme de gestion des stages de l'IAV Hassan II.</p>
+            <p class="lead text-muted" style="font-size: 1rem;">Bienvenue sur la plateforme de gestion des stages de l'IAV Hassan II.</p> {# Slightly decreased lead text size #}
         </div>
     </div>
-    <div class="row g-4">
+
+    {# Link for Utilisateurs - Moved above card rows #}
+    {% if session.get('role') == 'admin' %}
+    <div class="mt-3 mb-3"> {# Decreased vertical margins #}
+        <a href="/user" class="text-success fs-6 text-decoration-none"> {# Decreased font size #}
+            <i class="bi bi-people me-2"></i> Liste des Utilisateurs ({{ user_count }})
+        </a>
+    </div>
+    {% endif %}
+
+    {# Row 1: Stages, Enseignants, Étudiants #}
+    <div class="row g-3 mb-3"> {# Decreased row gap and bottom margin #}
         {% if session.get('role') in ['admin', 'teacher', 'car'] %}
         <div class="col-md-4">
             <div class="card h-100 shadow-sm rounded-4 card-statistic border-primary">
-                <div class="card-body text-center">
+                <div class="card-body text-center py-4"> {# Adjusted padding #}
                     <i class="bi bi-journal-text text-primary"></i>
-                    <h5 class="card-title mt-3">Stages</h5>
-                    <p class="display-6 fw-semibold">{{ internship_count }}</p>
-                    <a href="/internship" class="btn btn-outline-primary rounded-pill">Voir les stages</a>
+                    <h5 class="card-title mt-2" style="font-size: 1.1rem;">Stages</h5> {# Adjusted font size and margin #}
+                    <p class="display-6 fw-semibold mb-2" style="font-size: 2.2rem;">{{ internship_count }}</p> {# Adjusted font size and margin #}
+                    <a href="/internship" class="btn btn-outline-primary rounded-pill btn-sm">Voir les stages</a> {# Smaller button #}
                 </div>
             </div>
         </div>
         {% endif %}
+
         {% if session.get('role') in ['admin', 'teacher'] %}
         <div class="col-md-4">
             <div class="card h-100 shadow-sm rounded-4 card-statistic border-success">
-                <div class="card-body text-center">
+                <div class="card-body text-center py-4"> {# Adjusted padding #}
                     <i class="bi bi-person-badge text-success"></i>
-                    <h5 class="card-title mt-3">Enseignants</h5>
-                    <p class="display-6 fw-semibold">{{ teacher_count }}</p>
-                    <a href="/teacher" class="btn btn-outline-success rounded-pill">Voir les enseignants</a>
+                    <h5 class="card-title mt-2" style="font-size: 1.1rem;">Enseignants</h5> {# Adjusted font size and margin #}
+                    <p class="display-6 fw-semibold mb-2" style="font-size: 2.2rem;">{{ teacher_count }}</p> {# Adjusted font size and margin #}
+                    <a href="/teacher" class="btn btn-outline-success rounded-pill btn-sm">Voir les enseignants</a> {# Smaller button #}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if session.get('role') in ['admin', 'teacher', 'car'] %}
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm rounded-4 card-statistic border-primary"> {# Added card-statistic and border-primary #}
+                <div class="card-body text-center py-4"> {# Adjusted padding #}
+                    <i class="bi bi-people text-primary"></i> {# Icon color remains #}
+                    <h5 class="card-title mt-2" style="font-size: 1.1rem;">Étudiants</h5> {# Adjusted font size and margin #}
+                    <p class="display-6 fw-semibold mb-2" style="font-size: 2.2rem;">{{ student_count }}</p> {# Adjusted font size and margin #}
+                    <a href="/student" class="btn btn-outline-info rounded-pill btn-sm">Voir les étudiants</a> {# Smaller button #}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    {# Row 2: Types de stage, Départements, Voitures #}
+    <div class="row g-3 mb-3"> {# Decreased row gap and bottom margin #}
+         {% if session.get('role') in ['admin', 'teacher'] %}
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm rounded-4 card-statistic border-secondary">
+                <div class="card-body text-center py-4"> {# Adjusted padding #}
+                    <i class="bi bi-list-ul text-secondary"></i>
+                    <h5 class="card-title mt-2" style="font-size: 1.1rem;">Types de stage</h5> {# Adjusted font size and margin #}
+                    <p class="display-6 fw-semibold mb-2" style="font-size: 2.2rem;">{{ intern_type_count }}</p> {# Adjusted font size and margin #}
+                    <a href="/internship/types" class="btn btn-outline-secondary rounded-pill btn-sm">Voir les types</a> {# Smaller button #}
                 </div>
             </div>
         </div>
@@ -86,11 +127,11 @@
         {% if session.get('role') in ['admin', 'teacher'] %}
         <div class="col-md-4">
             <div class="card h-100 shadow-sm rounded-4 card-statistic border-warning">
-                <div class="card-body text-center">
+                <div class="card-body text-center py-4"> {# Adjusted padding #}
                     <i class="bi bi-building text-warning"></i>
-                    <h5 class="card-title mt-3">Départements</h5>
-                    <p class="display-6 fw-semibold">{{ department_count }}</p>
-                    <a href="/department" class="btn btn-outline-warning rounded-pill">Voir les départements</a>
+                    <h5 class="card-title mt-2" style="font-size: 1.1rem;">Départements</h5> {# Adjusted font size and margin #}
+                    <p class="display-6 fw-semibold mb-2" style="font-size: 2.2rem;">{{ department_count }}</p> {# Adjusted font size and margin #}
+                    <a href="/department" class="btn btn-outline-warning rounded-pill btn-sm">Voir les départements</a> {# Smaller button #}
                 </div>
             </div>
         </div>
@@ -98,47 +139,11 @@
         {% if session.get('role') in ['admin', 'car'] %}
         <div class="col-md-4">
             <div class="card h-100 shadow-sm rounded-4 card-statistic border-info">
-                <div class="card-body text-center">
+                <div class="card-body text-center py-4"> {# Adjusted padding #}
                     <i class="bi bi-truck text-info"></i>
-                    <h5 class="card-title mt-3">Voitures</h5>
-                    <p class="display-6 fw-semibold">{{ car_count }}</p>
-                    <a href="/car" class="btn btn-outline-info rounded-pill">Voir les voitures</a>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-        {% if session.get('role') in ['admin', 'teacher'] %}
-        <div class="col-md-4">
-            <div class="card h-100 shadow-sm rounded-4 card-statistic border-secondary">
-                <div class="card-body text-center">
-                    <i class="bi bi-list-ul text-secondary"></i>
-                    <h5 class="card-title mt-3">Types de stage</h5>
-                    <p class="display-6 fw-semibold">{{ intern_type_count }}</p>
-                    <a href="/internship/types" class="btn btn-outline-secondary rounded-pill">Voir les types</a>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-        {% if session.get('role') == 'admin' %}
-        <div class="col-md-4">
-            <div class="card h-100 shadow-sm rounded-4 card-statistic border-dark">
-                <div class="card-body text-center">
-                    <i class="bi bi-people text-dark"></i>
-                    <h5 class="card-title mt-3">Utilisateurs</h5>
-                    <p class="display-6 fw-semibold">{{ user_count }}</p>
-                    <a href="/user" class="btn btn-outline-dark rounded-pill">Voir les utilisateurs</a>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-        {% if session.get('role') in ['admin', 'teacher', 'car'] %}
-        <div class="col-md-4">
-            <div class="card h-100 shadow-sm rounded-4 card-statistic border-primary">
-                <div class="card-body text-center">
-                    <i class="bi bi-people text-primary"></i>
-                    <h5 class="card-title mt-3">Étudiants</h5>
-                    <p class="display-6 fw-semibold">{{ student_count }}</p>
-                    <a href="/student" class="btn btn-outline-info rounded-pill">Voir les étudiants</a>
+                    <h5 class="card-title mt-2" style="font-size: 1.1rem;">Voitures</h5> {# Adjusted font size and margin #}
+                    <p class="display-6 fw-semibold mb-2" style="font-size: 2.2rem;">{{ car_count }}</p> {# Adjusted font size and margin #}
+                    <a href="/car" class="btn btn-outline-info rounded-pill btn-sm">Voir les voitures</a> {# Smaller button #}
                 </div>
             </div>
         </div>
